@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
+    @Autowired
     private final HashMap<Integer,User> users = new HashMap<>();
     private int userId;
 
@@ -26,17 +28,8 @@ public class UserController {
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        boolean isExist = false;
-        for (User u : users.values()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                isExist = true;
-                break;
-            }
-        }
-        if (isExist) {
+        if (isExist(user,"email")) {
             throw new ValidationException("Пользователь с id: " + user.getEmail() + " уже существует.");
-        } else if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не должен содержать пробелов.");
         } else {
             user.setId(userIdGenerator());
             if (user.getName() == null || user.getName().isBlank() || user.getName().isEmpty()){
@@ -50,22 +43,35 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        boolean isExist = false;
-        for (User u : users.values()) {
-            if (u.getId() == user.getId()) {
-                isExist = true;
-                break;
-            }
-        }
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не должен содержать пробелов.");
-        } else if (isExist) {
+        if (isExist(user,"id")) {
             users.remove(user.getId());
             users.put(user.getId(), user);
         } else throw new ValidationException("Пользователя с id: " + user.getId()+ " не существует");
         log.debug("Обновлены данные пользователя: {}", user);
         return users.get(user.getId());
     }
+
+    boolean isExist(User user, String flag) {
+        boolean isExist = false;
+        switch(flag) {
+            case"email":
+            for (User u : users.values()) {
+                if (u.getEmail().equals(user.getEmail())) {
+                    isExist = true;
+                    break;
+                }
+            }
+            case"id":
+            for (User u : users.values()) {
+                if (u.getId() == user.getId()) {
+                    isExist = true;
+                    break;
+                }
+            }
+        }
+        return isExist;
+    }
+
 
     int userIdGenerator(){
         return ++userId;

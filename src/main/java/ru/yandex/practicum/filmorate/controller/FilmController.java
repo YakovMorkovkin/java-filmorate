@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -15,7 +16,7 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/films")
 public class FilmController {
-
+    @Autowired
     private final HashMap<Integer, Film> films = new HashMap<>();
     private int filmId;
 
@@ -26,18 +27,9 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film createUser(@Valid @RequestBody Film film) {
-        boolean isExist = false;
-        for (Film f : films.values()) {
-            if (f.getName().equals(film.getName())) {
-                isExist = true;
-                break;
-            }
-        }
-        if (isExist) {
+    public Film createFilm(@Valid @RequestBody Film film) {
+        if (isExist(film,"name")) {
             throw new ValidationException("Фильм с названием " + film.getName() + " уже существует.");
-        } else if (film.getReleaseDate().isBefore(Film.DATE)) {
-            throw new ValidationException("До " + Film.DATE + " фильмов не снимали.");
         } else {
             film.setId(filmIdGenerator());
             films.put(film.getId(),film);
@@ -47,22 +39,34 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateUser(@Valid @RequestBody Film film) {
-        boolean isExist = false;
-        for (Film f : films.values()) {
-            if (f.getId() == film.getId()) {
-                isExist = true;
-                break;
-            }
-        }
-        if (film.getReleaseDate().isBefore(Film.DATE)) {
-            throw new ValidationException("До " + Film.DATE + " фильмов не снимали.");
-        } else if (isExist) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
+        if (isExist(film,"id")) {
             films.remove(film.getId());
             films.put(film.getId(),film);
         } else throw new ValidationException("Фильма с id: " + film.getId()+ " не существует");
         log.debug("Обновлён фильм: {}", film);
         return films.get(film.getId());
+    }
+
+    boolean isExist(Film film, String flag) {
+        boolean isExist = false;
+        switch(flag) {
+            case"name":
+                for (Film f : films.values()) {
+                    if (f.getName().equals(film.getName())) {
+                        isExist = true;
+                        break;
+                    }
+                }
+            case"id":
+                for (Film f : films.values()) {
+                    if (f.getId() == film.getId()) {
+                        isExist = true;
+                        break;
+                    }
+                }
+        }
+        return isExist;
     }
 
     int filmIdGenerator(){
