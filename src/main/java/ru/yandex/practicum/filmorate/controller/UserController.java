@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -15,10 +14,8 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-
-    @Autowired
     private final HashMap<Integer,User> users = new HashMap<>();
-    private int userId;
+    private Integer userId = 0;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -28,7 +25,7 @@ public class UserController {
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        if (isExist(user,"email")) {
+        if (isExistByEmail(user)) {
             throw new ValidationException("Пользователь с id: " + user.getEmail() + " уже существует.");
         } else {
             user.setId(userIdGenerator());
@@ -43,7 +40,7 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        if (isExist(user,"id")) {
+        if (isExistById(user)) {
             users.remove(user.getId());
             users.put(user.getId(), user);
         } else throw new ValidationException("Пользователя с id: " + user.getId()+ " не существует");
@@ -51,29 +48,29 @@ public class UserController {
         return users.get(user.getId());
     }
 
-    boolean isExist(User user, String flag) {
+    private boolean isExistByEmail(User user) {
         boolean isExist = false;
-        switch(flag) {
-            case"email":
-            for (User u : users.values()) {
-                if (u.getEmail().equals(user.getEmail())) {
-                    isExist = true;
-                    break;
-                }
-            }
-            case"id":
-            for (User u : users.values()) {
-                if (u.getId() == user.getId()) {
-                    isExist = true;
-                    break;
-                }
+        for (User u : users.values()) {
+            if (u.getEmail().equals(user.getEmail())) {
+                isExist = true;
+                break;
             }
         }
         return isExist;
     }
 
+    private boolean isExistById(User user) {
+        boolean isExist = false;
+        for (User u : users.values()) {
+            if (u.getId() == user.getId()) {
+                isExist = true;
+                break;
+            }
+        }
+        return isExist;
+    }
 
-    int userIdGenerator(){
+    private int userIdGenerator(){
         return ++userId;
     }
 }

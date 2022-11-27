@@ -67,7 +67,7 @@ public class FilmControllerTest {
         film.setId(1);
         //film.setName("nisi eiusmod1");
         film.setDescription("adipisicing");
-        film.setReleaseDate(LocalDate.of(1767, 3, 25));
+        film.setReleaseDate(LocalDate.of(1967, 3, 25));
         film.setDuration(100);
 
         Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);
@@ -88,27 +88,10 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setId(1);
         film.setName("nisi eiusmod1");
-        film.setDescription("He wandered  by the L-wr-nce H-ll \n" +
-                "      (An axe upon his shoulders laid)\n" +
-                "Quoth He:—'I do not like at all\n" +
-                "      An upstart tree that casts a shade;\n" +
-                "Besides, it's bigger than the rest, \n" +
-                "Which rankles in my Liberal breast.\n" +
-                "\n" +
-                "It took some twenty years to grow.\n" +
-                "      It is a most offensive tree;\n" +
-                "And shall I pass without a blow, \n" +
-                "      Arboreal aristocracy?\n" +
-                "Jamais—nevaire! So down it comes.—\n" +
-                "Bed out some neat chrysanthemums.\n" +
-                "\n" +
-                "The long weeks came; the long weeks passed; \n" +
-                "      The neat chrysanthemums were bedded;\n" +
-                "But some grew slow, while some grew fast,\n" +
-                "      And some were long, and some short headed,\n" +
-                "He watched  their nodding ranks with tears,— \n" +
-                "And fetched a malli  and the shears.");
-        film.setReleaseDate(LocalDate.of(1767, 3, 25));
+        film.setDescription("The main film of the year 2009 is Avatar by James Cameron, the producer of such films " +
+                "as Terminator, Titanic, The Strangers. This film ranks with above-mentioned world-famous films and " +
+                "probably belongs to the science-fiction genre.");
+        film.setReleaseDate(LocalDate.of(1967, 3, 25));
         film.setDuration(100);
 
         Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);
@@ -152,7 +135,7 @@ public class FilmControllerTest {
         film.setId(1);
         film.setName("nisi eiusmod1");
         film.setDescription("adipisicing");
-        film.setReleaseDate(LocalDate.of(1767, 3, 25));
+        film.setReleaseDate(LocalDate.of(1967, 3, 25));
         film.setDuration(-100);
 
         Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);

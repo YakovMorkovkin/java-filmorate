@@ -4,6 +4,8 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
 
+import static ru.yandex.practicum.filmorate.constant.Constant.FIRSTDAYOFTHECINEMA;
+
 public class ReleaseDateValidator implements ConstraintValidator<ReleaseDate, LocalDate> {
 
     @Override
@@ -12,6 +14,6 @@ public class ReleaseDateValidator implements ConstraintValidator<ReleaseDate, Lo
 
     @Override
     public boolean isValid(LocalDate date, ConstraintValidatorContext context) {
-        return !date.isBefore(LocalDate.of(1895, 12, 28));
+        return !date.isBefore(FIRSTDAYOFTHECINEMA);
     }
 }

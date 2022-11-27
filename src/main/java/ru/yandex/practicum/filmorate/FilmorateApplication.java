@@ -15,12 +15,12 @@ public class FilmorateApplication {
 	}
 
 	@Bean
-    public HashMap films() {
-		return new HashMap<Integer, Film>();
+    public HashMap<Integer, Film> films() {
+		return new HashMap<>();
 	}
 	@Bean
-	public HashMap users() {
-		return new HashMap<Integer, User>();
+	public HashMap<Integer, User> users() {
+		return new HashMap<>();
 	}
 
 }
