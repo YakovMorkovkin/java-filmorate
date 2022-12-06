@@ -13,11 +13,13 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Component
 public class Film {
-
+    private final Set<Long> likes = new HashSet<>();;
     private int id;
     @NotEmpty(message = "Название не может быть пустым.")
     private String name;

@@ -1,76 +1,79 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-    private final HashMap<Integer,User> users = new HashMap<>();
-    private Integer userId = 0;
+
+    private final InMemoryUserStorage inMemoryUserStorage;
+    private final UserService userService;
+    @Autowired
+    public UserController(InMemoryUserStorage inMemoryUserStorage, UserService userService) {
+        this.inMemoryUserStorage = inMemoryUserStorage;
+        this.userService = userService;
+    }
+
 
     @GetMapping
     public List<User> getAllUsers() {
-        log.debug("Количество пользователей в текущий момент: {}",users.size());
-        return new ArrayList<>(users.values());
+        return inMemoryUserStorage.getAllUsers();
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable int id) {
+        if (inMemoryUserStorage.getUserById(id) == null) {
+            throw new NullPointerException("Пользователь не найден");
+        }
+        log.debug("Пользователь с id-{}: {}", id, inMemoryUserStorage.getUserById(id));
+        return inMemoryUserStorage.getUserById(id);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Set<User> getFriendsOfUser(@PathVariable int id) {
+        return userService.getFriendsOfUser(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Set<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        log.debug("Общие друзья пользователей с id-{} и id-{} : {}"
+                , id, otherId, userService.getCommonFriends(id, otherId));
+        return userService.getCommonFriends(id, otherId);
     }
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        if (isExistByEmail(user)) {
-            throw new ValidationException("Пользователь с id: " + user.getEmail() + " уже существует.");
-        } else {
-            user.setId(userIdGenerator());
-            if (user.getName() == null || user.getName().isBlank() || user.getName().isEmpty()){
-                user.setName(user.getLogin());
-            }
-            users.put(user.getId(),user);
-        }
-        log.debug("Новый пользователь: {}", user);
-        return users.get(user.getId());
+        return inMemoryUserStorage.createUser(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        if (isExistById(user)) {
-            users.remove(user.getId());
-            users.put(user.getId(), user);
-        } else throw new ValidationException("Пользователя с id: " + user.getId()+ " не существует");
-        log.debug("Обновлены данные пользователя: {}", user);
-        return users.get(user.getId());
+
+        return inMemoryUserStorage.updateUser(user);
     }
 
-    private boolean isExistByEmail(User user) {
-        boolean isExist = false;
-        for (User u : users.values()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                isExist = true;
-                break;
-            }
-        }
-        return isExist;
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addToFriends(@PathVariable int id, @PathVariable int friendId) {
+
+        userService.addToFriends(id, friendId);
     }
 
-    private boolean isExistById(User user) {
-        boolean isExist = false;
-        for (User u : users.values()) {
-            if (u.getId() == user.getId()) {
-                isExist = true;
-                break;
-            }
-        }
-        return isExist;
-    }
-
-    private int userIdGenerator(){
-        return ++userId;
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFromFriends(@PathVariable int id, @PathVariable int friendId) {
+        log.debug("Пользователи с id-{} и id-{} удалены друг у друга из друзей", id, friendId);
+        userService.removeFromFriends(id, friendId);
     }
 }

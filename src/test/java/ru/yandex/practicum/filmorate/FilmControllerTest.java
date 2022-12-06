@@ -29,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FilmControllerTest {
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    Film film;
     @MockBean
     private FilmController filmController;
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -36,7 +38,7 @@ public class FilmControllerTest {
 
     @Test
     public void testPostCorrectFilm() throws Exception {
-        Film film = new Film();
+
         film.setId(1);
         film.setName("nisi eiusmod1");
         film.setDescription("adipisicing");
@@ -63,7 +65,7 @@ public class FilmControllerTest {
 
     @Test
     public void testPostEmptyFilmName() throws Exception {
-        Film film = new Film();
+        //Film film = new Film();
         film.setId(1);
         //film.setName("nisi eiusmod1");
         film.setDescription("adipisicing");
@@ -85,7 +87,7 @@ public class FilmControllerTest {
 
     @Test
     public void testPostLongFilmDescription() throws Exception {
-        Film film = new Film();
+        //Film film = new Film();
         film.setId(1);
         film.setName("nisi eiusmod1");
         film.setDescription("The main film of the year 2009 is Avatar by James Cameron, the producer of such films " +
@@ -109,7 +111,7 @@ public class FilmControllerTest {
 
     @Test
     public void testPostWrongReleaseDateFilm() throws Exception {
-        Film film = new Film();
+        //Film film = new Film();
         film.setId(1);
         film.setName("nisi eiusmod1");
         film.setDescription("adipisicing");
@@ -131,7 +133,7 @@ public class FilmControllerTest {
 
     @Test
     public void testPostNegativeFilmDuration() throws Exception {
-        Film film = new Film();
+        //Film film = new Film();
         film.setId(1);
         film.setName("nisi eiusmod1");
         film.setDescription("adipisicing");
