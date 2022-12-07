@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -9,20 +9,18 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
     private final HashMap<Integer,User> users;
     private Integer userId = 0;
-    @Autowired
-    public InMemoryUserStorage(HashMap<Integer, User> users) {
-        this.users = users;
-    }
 
     @Override
     public List<User> getAllUsers() {
-        log.debug("Количество пользователей в текущий момент: {}", users.size());
+        log.info("Количество пользователей в текущий момент: {}", users.size());
         return new ArrayList<>(users.values());
     }
     @Override
@@ -41,7 +39,7 @@ public class InMemoryUserStorage implements UserStorage {
             }
             users.put(user.getId(),user);
         }
-        log.debug("Новый пользователь: {}", user);
+        log.info("Новый пользователь: {}", user);
         return users.get(user.getId());
     }
 
@@ -51,7 +49,7 @@ public class InMemoryUserStorage implements UserStorage {
             users.remove(user.getId());
             users.put(user.getId(), user);
         } else throw new ValidationException("Пользователя с id: " + user.getId()+ " не существует");
-        log.debug("Обновлены данные пользователя: {}", user);
+        log.info("Обновлены данные пользователя: {}", user);
         return users.get(user.getId());
     }
 
@@ -81,7 +79,7 @@ public class InMemoryUserStorage implements UserStorage {
         return ++userId;
     }
 
-    public HashMap<Integer, User> getUsers() {
+    public Map<Integer, User> getUsers() {
         return users;
     }
 }

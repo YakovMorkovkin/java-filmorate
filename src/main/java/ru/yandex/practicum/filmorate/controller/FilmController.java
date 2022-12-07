@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
@@ -15,35 +16,30 @@ import java.util.Set;
 
 @RestController
 @Slf4j
+@RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
     private final InMemoryFilmStorage inMemoryFilmStorage;
     private final FilmService filmService;
 
-    @Autowired
-    public FilmController(InMemoryFilmStorage inMemoryFilmStorage, FilmService filmService) {
-        this.inMemoryFilmStorage = inMemoryFilmStorage;
-        this.filmService = filmService;
-    }
-
     @GetMapping
     public List<Film>  getAllFilms() {
-        log.debug("Количество фильмов в базе: {}",inMemoryFilmStorage.getAllFilms().size());
+        log.info("Количество фильмов в базе: {}",inMemoryFilmStorage.getAllFilms().size());
         return inMemoryFilmStorage.getAllFilms();
     }
 
     @GetMapping("/{id}")
-    public Film getUserById(@PathVariable int id) {
+    public Film getFilmById(@PathVariable int id) {
         if (inMemoryFilmStorage.getFilmById(id) == null) {
-            throw new NullPointerException("Пользователь не найден");
+            throw new NotFoundException("Фильм не найден в базе");
         }
-        log.debug("Фильм с id-{}: {}", id, inMemoryFilmStorage.getFilmById(id));
+        log.info("Фильм с id-{}: {}", id, inMemoryFilmStorage.getFilmById(id));
         return inMemoryFilmStorage.getFilmById(id);
     }
 
     @GetMapping("/popular")
     public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) int count) {
-        log.debug("Самые популярные {} фильмов в базе: {}", count, filmService.getCountOfTheBestFilms(count));
+        log.info("Самые популярные {} фильмов в базе: {}", count, filmService.getCountOfTheBestFilms(count));
         return filmService.getCountOfTheBestFilms(count);
     }
 
@@ -64,7 +60,7 @@ public class FilmController {
 
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public void disLike(@PathVariable int id, @PathVariable int userId) {
-        filmService.disLike(userId, id);
+    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+        filmService.removeLike(userId, id);
     }
 }

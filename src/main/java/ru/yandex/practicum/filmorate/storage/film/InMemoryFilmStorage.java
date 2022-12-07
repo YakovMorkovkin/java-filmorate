@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
     private final HashMap<Integer, Film> films = new HashMap<>();
     private Integer filmId = 0;
@@ -32,7 +34,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         } else {
             film.setId(filmIdGenerator());
             films.put(film.getId(), film);
-            log.debug("Добавлен фильм: {}", film);
+            log.info("Добавлен фильм: {}", film);
         }
         return films.get(film.getId());
     }
@@ -42,10 +44,12 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (isExistById(film)) {
             films.remove(film.getId());
             films.put(film.getId(), film);
-            log.debug("Обновлён фильм: {}", film);
+            log.info("Обновлён фильм: {}", film);
         } else throw new ValidationException("Фильма с id: " + film.getId() + " не существует");
         return films.get(film.getId());
     }
+
+
 
     private boolean isExistByName(Film film) {
         boolean isExist = false;

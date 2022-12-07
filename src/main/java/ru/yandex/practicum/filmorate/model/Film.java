@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.Data;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.validator.ReleaseDate;
 
 import javax.validation.constraints.NotEmpty;
@@ -19,7 +20,7 @@ import java.util.Set;
 @Data
 @Component
 public class Film {
-    private final Set<Long> likes = new HashSet<>();;
+    private final Set<Long> likes = new HashSet<>();
     private int id;
     @NotEmpty(message = "Название не может быть пустым.")
     private String name;
@@ -34,4 +35,15 @@ public class Film {
     @NotNull
     @Positive(message = "Длительность должна быть положительной.")
     private Integer duration;
+
+    public void addLike(Integer userId) {
+        likes.add(Long.valueOf(userId));
+    }
+
+    public void removeLike(Integer userId) {
+        if(likes.contains(Long.valueOf(userId))) {
+            likes.remove(Long.valueOf(userId));
+        } else throw new NotFoundException("Пользователь с id-"
+                + userId + " не ставил like фильму с id-" + getId());
+    }
 }
