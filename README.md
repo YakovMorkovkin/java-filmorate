@@ -23,28 +23,28 @@ WHERE id = UserId;
 **Получение списка друзей пользователя по UserId :**
 ```
 SELECT *       
-FROM friends
-WHERE user1_id = UserId
-AND confirmation = 'true';
+FROM user_friends
+WHERE user_id = UserId
+AND confirmation IS TRUE;
 ```
 **Получение списка друзей пользователя по UserId :**
 ```
-SELECT user2_id       
-FROM friends
-WHERE user1_id = UserId
-AND confirmation = TRUE;
+SELECT friends_with       
+FROM user_friends
+WHERE user_id = UserId
+AND confirmation IS TRUE;
 ```
 **Получение списка общих друзей пользователей по UserId1 и UserId2 :**
 ```
-SELECT user2_id       
+SELECT friends_with       
+FROM user_friends
+WHERE user_id = UserId1
+AND confirmation IS TRUE
+AND friends_with IN (
+SELECT friends_with       
 FROM friends
-WHERE user1_id = UserId1
-AND confirmation = TRUE
-AND user2_id IN (
-SELECT user2_id       
-FROM friends
-WHERE user1_id = UserId2
-AND confirmation = TRUE
+WHERE user_id = UserId2
+AND confirmation IS TRUE
 )
 ```
 **Получение всех фильмов :**
@@ -65,9 +65,9 @@ SELECT id
 FROM films
 WHERE id IN (
 SELECT film_id
-FROM likes
+FROM film_likes
 GROUP BY film_id
-ORDER BY COUNT(user_id) desc
+ORDER BY COUNT(liked_by) DESC
 LIMIT(count)
 )
 ```
