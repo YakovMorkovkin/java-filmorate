@@ -94,7 +94,7 @@ FROM likes
 
 GROUP BY film_id
 
-ORDER BY SUM(user_id) desc
+ORDER BY COUNT(user_id) desc
 
 LIMIT(count)
 )
