@@ -61,7 +61,7 @@ WHERE id = filmId;
 ```
 **Получение заданного (count) количества самых популярных фильмов :**
 ```
-SELECT id       
+SELECT *       
 FROM films
 WHERE id IN (
 SELECT film_id
