@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +27,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {UserController.class, User.class})
 @WebMvcTest
-public class UserControllerTest {
+class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    User user;
     @MockBean
     private UserController userController;
     private static final ObjectMapper mapper = new ObjectMapper();
     String json;
 
     @Test
-    public void testPostCorrectUser() throws Exception {
-        User user = new User();
+    void testPostCorrectUser() throws Exception {
         user.setId(1);
         user.setEmail("mail@mail.ru");
         user.setLogin("dolores");
@@ -46,11 +49,11 @@ public class UserControllerTest {
         json = mapper.writeValueAsString(user);
 
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .characterEncoding("utf-8")
-                        .accept(MediaType.APPLICATION_JSON);
-        
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .characterEncoding("utf-8")
+                .accept(MediaType.APPLICATION_JSON);
+
         mockMvc.perform(builder)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", Matchers.equalTo(1)))
@@ -60,150 +63,21 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.birthday", Matchers.equalTo("2000-12-31")));
     }
 
-    @Test
-    public void testPostUserWithEmptyEmail() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("");
-        user.setLogin("dolores");
-        user.setName("Nick Name");
-        user.setBirthday(LocalDate.of(2000, 12, 31));
-
-        Mockito.when(userController.createUser(ArgumentMatchers.any())).thenReturn(user);
-        String json = mapper.writeValueAsString(user);
-
-        MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .characterEncoding("utf-8")
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostUserWithWrongEmail() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("mail.ru");
-        user.setLogin("dolores");
-        user.setName("Nick Name");
-        user.setBirthday(LocalDate.of(2000, 12, 31));
-
-        Mockito.when(userController.createUser(ArgumentMatchers.any())).thenReturn(user);
-        String json = mapper.writeValueAsString(user);
-
-        MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .characterEncoding("utf-8")
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostUserWithoutLogin() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("mail@mail.ru");
-        user.setLogin("");
-        user.setName("Nick Name");
-        user.setBirthday(LocalDate.of(2000, 12, 31));
-
-        Mockito.when(userController.createUser(ArgumentMatchers.any())).thenReturn(user);
-        String json = mapper.writeValueAsString(user);
-
-        MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .characterEncoding("utf-8")
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostUserWithBlankInLogin() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("mail@mail.ru");
-        user.setLogin("dolores santos");
-        user.setName("Nick Name");
-        user.setBirthday(LocalDate.of(2000, 12, 31));
-
-        Mockito.when(userController.createUser(ArgumentMatchers.any())).thenReturn(user);
-        String json = mapper.writeValueAsString(user);
-
-        MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .characterEncoding("utf-8")
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostUserWithNullLogin() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("mail@mail.ru");
-        user.setName("Nick Name");
-        user.setBirthday(LocalDate.of(2000, 12, 31));
-
-        Mockito.when(userController.createUser(ArgumentMatchers.any())).thenReturn(user);
-        String json = mapper.writeValueAsString(user);
-
-        MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .characterEncoding("utf-8")
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostUserWithInFutureBirth() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("mail@mail.ru");
-        user.setLogin("dolores");
-        user.setName("Nick Name");
-        user.setBirthday(LocalDate.of(2023, 12, 31));
-
-        Mockito.when(userController.createUser(ArgumentMatchers.any())).thenReturn(user);
-        String json = mapper.writeValueAsString(user);
-
-        MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                        .characterEncoding("utf-8")
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostUserWithNullBirth() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setEmail("mail@mail.ru");
-        user.setLogin("dolores");
-        user.setName("Nick Name");
+    @ParameterizedTest
+    @CsvSource({
+            "1,,dolores,Nick Name,2000-12-31",
+            "1,'',dolores,Nick Name,2000-12-31",
+            "1,mail.ru,dolores,Nick Name,2000-12-31",
+            "1,mail@mail.ru,'',Nick Name,2000-12-31",
+            "1,mail@mail.ru,dolores santos,Nick Name,2023-12-31",
+            "1,mail@mail.ru,,Nick Name,2000-12-31",
+    })
+    void testPostUserWithWrongParameters(int id, String email, String login, String name, LocalDate birthday) throws Exception {
+        user.setId(id);
+        user.setEmail(email);
+        user.setLogin(login);
+        user.setName(name);
+        user.setBirthday(birthday);
 
         Mockito.when(userController.createUser(ArgumentMatchers.any())).thenReturn(user);
         String json = mapper.writeValueAsString(user);
