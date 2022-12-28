@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -19,22 +19,22 @@ import java.util.Set;
 @RequestMapping("/users")
 public class UserController {
 
-    private final InMemoryUserStorage inMemoryUserStorage;
+    private final UserStorage userStorage;
     private final UserService userService;
 
 
     @GetMapping
     public List<User> getAllUsers() {
-        return inMemoryUserStorage.getAllUsers();
+        return userStorage.getAllUsers();
     }
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
-        if (inMemoryUserStorage.getUserById(id) == null) {
+        if (userStorage.getUserById(id).isEmpty()) {
             throw new NotFoundException("Пользователь не найден в базе");
         }
-        log.info("Пользователь с id-{}: {}", id, inMemoryUserStorage.getUserById(id));
-        return inMemoryUserStorage.getUserById(id);
+        log.info("Пользователь с id-{}: {}", id, userStorage.getUserById(id));
+        return userStorage.getUserById(id).orElse(null);
     }
 
     @GetMapping("/{id}/friends")
@@ -52,18 +52,16 @@ public class UserController {
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        return inMemoryUserStorage.createUser(user);
+        return userStorage.createUser(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-
-        return inMemoryUserStorage.updateUser(user);
+        return userStorage.updateUser(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     public void addToFriends(@PathVariable int id, @PathVariable int friendId) {
-
         userService.addToFriends(id, friendId);
     }
 

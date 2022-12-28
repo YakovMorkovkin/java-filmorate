@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +15,10 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserService {
-    private final InMemoryUserStorage inMemoryUserStorage;
+public class InMemoryUserService implements UserService {
 
+    private final InMemoryUserStorage inMemoryUserStorage;
+    @Override
     public void addToFriends(Integer userId, Integer friendId) {
         if (getUsers().containsKey(userId) && getUsers().containsKey(friendId)) {
             getUser(userId).addFriend(friendId);
@@ -27,7 +28,7 @@ public class UserService {
             throw new NotFoundException("Один или оба пользователя не найдены в базе");
         }
     }
-
+    @Override
     public void removeFromFriends(Integer userId, Integer friendId) {
         if (getUsers().containsKey(userId) && getUsers().containsKey(friendId)) {
             getUser(userId).removeFriend(friendId);
@@ -37,7 +38,7 @@ public class UserService {
             throw new NotFoundException("Один или оба пользователя не найдены в базе");
         }
     }
-
+    @Override
     public Set<User> getFriendsOfUser(Integer userId) {
         Set<Long> friendsIds = getUserFriends(userId);
         Set<User> friends = new HashSet<>();
@@ -47,7 +48,7 @@ public class UserService {
         log.info("Id друзей пользователя с id-{} : {}", userId, friends);
         return friends;
     }
-
+    @Override
     public Set<User> getCommonFriends(Integer userId, Integer otherUserId) {
         Set<Long> userFriends = getUserFriends(userId);
         Set<Long> otherUserFriends = getUserFriends(otherUserId);

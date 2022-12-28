@@ -14,14 +14,13 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Component
+@Component("user")
 public class User {
     private int id;
-    private Set<Long> friends = new HashSet<>();
+    private Set<Long> friends;
     @NotEmpty(message = "Электронная почта не может быть пустой.")
     @Email(message = "Строка должна быть правильно сформированным адресом электронной почты.")
     private String email;
