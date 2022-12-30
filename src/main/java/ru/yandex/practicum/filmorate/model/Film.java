@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.validator.ReleaseDate;
 
@@ -18,7 +17,6 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Data
-@Component("film")
 public class Film implements Serializable {
     private Set<Long> likes;
     private int id;

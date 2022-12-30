@@ -32,7 +32,7 @@ class FilmControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    Film film;
+    private Film film;
     @MockBean
     private FilmController filmController;
     private static final ObjectMapper mapper = new ObjectMapper();

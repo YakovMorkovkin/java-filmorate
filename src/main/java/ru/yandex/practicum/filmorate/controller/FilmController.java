@@ -24,8 +24,9 @@ public class FilmController {
 
     @GetMapping
     public List<Film>  getAllFilms() {
-        log.info("Количество фильмов в базе: {}",filmStorage.getAllFilms().size());
-        return filmStorage.getAllFilms();
+        List<Film> films  = filmStorage.getAllFilms();
+        log.info("Количество фильмов в базе: {}",films.size());
+        return films;
     }
 
     @GetMapping("/{id}")
@@ -33,14 +34,16 @@ public class FilmController {
         if (filmStorage.getFilmById(id).isEmpty()) {
             throw new NotFoundException("Фильм не найден в базе");
         }
-        log.info("Фильм с id-{}: {}", id, filmStorage.getFilmById(id));
-        return filmStorage.getFilmById(id).orElse(null);
+        Film film = filmStorage.getFilmById(id).orElse(null);
+        log.info("Фильм с id-{}: {}", id, film);
+        return film;
     }
 
     @GetMapping("/popular")
     public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) int count) {
-        log.info("Самые популярные {} фильмов в базе: {}", count, filmService.getCountOfTheBestFilms(count));
-        return filmService.getCountOfTheBestFilms(count);
+        Set<Film> bestFilms = filmService.getCountOfTheBestFilms(count);
+        log.info("Самые популярные {} фильмов в базе: {}", count, bestFilms);
+        return bestFilms;
     }
 
     @PostMapping

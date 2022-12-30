@@ -33,8 +33,9 @@ public class UserController {
         if (userStorage.getUserById(id).isEmpty()) {
             throw new NotFoundException("Пользователь не найден в базе");
         }
-        log.info("Пользователь с id-{}: {}", id, userStorage.getUserById(id));
-        return userStorage.getUserById(id).orElse(null);
+        User user = userStorage.getUserById(id).orElse(null);
+        log.info("Пользователь с id-{}: {}", id, user);
+        return user;
     }
 
     @GetMapping("/{id}/friends")
@@ -45,9 +46,10 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
     public Set<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        Set<User> commonFriends = userService.getCommonFriends(id, otherId);
         log.info("Общие друзья пользователей с id-{} и id-{} : {}"
-                , id, otherId, userService.getCommonFriends(id, otherId));
-        return userService.getCommonFriends(id, otherId);
+                , id, otherId, commonFriends);
+        return commonFriends;
     }
 
     @PostMapping
