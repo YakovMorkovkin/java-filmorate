@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Data
-@Component("user")
 public class User {
     private int id;
     private Set<Long> friends;

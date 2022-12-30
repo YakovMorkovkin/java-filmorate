@@ -31,7 +31,7 @@ class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    User user;
+    private User user;
     @MockBean
     private UserController userController;
     private static final ObjectMapper mapper = new ObjectMapper();
