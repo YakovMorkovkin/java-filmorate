@@ -31,8 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FilmControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private Film film;
     @MockBean
     private FilmController filmController;
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -40,6 +38,7 @@ class FilmControllerTest {
 
     @Test
     void testPostCorrectFilm() throws Exception {
+        Film film = new Film();
         film.setId(1);
         film.setName("Terminator");
         film.setDescription("Film about killing machine");
@@ -71,6 +70,7 @@ class FilmControllerTest {
             "1,Terminator,Film about killing machine,1984-10-26,-100",
     })
     void testPostFilmWithWrongParameters(int id, String name, String description, LocalDate releaseDate, int duration) throws Exception {
+        Film film = new Film();
         film.setId(id);
         film.setName(name);
         film.setDescription(description);
@@ -92,6 +92,7 @@ class FilmControllerTest {
 
     @Test
     void testPostLongFilmDescription() throws Exception {
+        Film film = new Film();
         film.setId(1);
         film.setName("Terminator");
         film.setDescription("The main film of the year 2009 is Avatar by James Cameron, the producer of such films " +

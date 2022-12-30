@@ -30,8 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private User user;
     @MockBean
     private UserController userController;
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -39,6 +37,7 @@ class UserControllerTest {
 
     @Test
     void testPostCorrectUser() throws Exception {
+        User user = new User();
         user.setId(1);
         user.setEmail("mail@mail.ru");
         user.setLogin("dolores");
@@ -73,6 +72,7 @@ class UserControllerTest {
             "1,mail@mail.ru,,Nick Name,2000-12-31",
     })
     void testPostUserWithWrongParameters(int id, String email, String login, String name, LocalDate birthday) throws Exception {
+        User user = new User();
         user.setId(id);
         user.setEmail(email);
         user.setLogin(login);
