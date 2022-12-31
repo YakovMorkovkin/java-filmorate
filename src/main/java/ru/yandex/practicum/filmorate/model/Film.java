@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.validator.ReleaseDate;
 
@@ -13,14 +12,13 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Component
-public class Film {
-    private final Set<Long> likes = new HashSet<>();
+public class Film implements Serializable {
+    private Set<Long> likes;
     private int id;
     @NotEmpty(message = "Название не может быть пустым.")
     private String name;
@@ -35,6 +33,8 @@ public class Film {
     @NotNull
     @Positive(message = "Длительность должна быть положительной.")
     private Integer duration;
+    private Mpa mpa;
+    private Set<Genre> genres;
 
     public void addLike(Integer userId) {
         likes.add(Long.valueOf(userId));

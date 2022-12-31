@@ -6,12 +6,9 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@Component
+@Component("InMemory")
 @Slf4j
 @RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
@@ -24,8 +21,12 @@ public class InMemoryUserStorage implements UserStorage {
         return new ArrayList<>(users.values());
     }
     @Override
-    public User getUserById(int id) {
-            return users.get(id);
+    public Optional<User> getUserById(int id) {
+        if(users.get(id) != null) {
+            User user = users.get(id);
+            return Optional.of(user);
+
+        } else return Optional.empty();
     }
 
     @Override
@@ -54,7 +55,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private boolean isExistByEmail(User user) {
-        boolean isExist = false;
+        var isExist = false;
         for (User u : users.values()) {
             if (u.getEmail().equals(user.getEmail())) {
                 isExist = true;
@@ -65,7 +66,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private boolean isExistById(User user) {
-        boolean isExist = false;
+        var isExist = false;
         for (User u : users.values()) {
             if (u.getId() == user.getId()) {
                 isExist = true;

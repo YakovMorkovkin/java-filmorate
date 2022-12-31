@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -19,38 +19,41 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
-    private final InMemoryFilmStorage inMemoryFilmStorage;
+    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
     @GetMapping
     public List<Film>  getAllFilms() {
-        log.info("Количество фильмов в базе: {}",inMemoryFilmStorage.getAllFilms().size());
-        return inMemoryFilmStorage.getAllFilms();
+        List<Film> films  = filmStorage.getAllFilms();
+        log.info("Количество фильмов в базе: {}",films.size());
+        return films;
     }
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable int id) {
-        if (inMemoryFilmStorage.getFilmById(id) == null) {
+        if (filmStorage.getFilmById(id).isEmpty()) {
             throw new NotFoundException("Фильм не найден в базе");
         }
-        log.info("Фильм с id-{}: {}", id, inMemoryFilmStorage.getFilmById(id));
-        return inMemoryFilmStorage.getFilmById(id);
+        Film film = filmStorage.getFilmById(id).orElse(null);
+        log.info("Фильм с id-{}: {}", id, film);
+        return film;
     }
 
     @GetMapping("/popular")
     public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) int count) {
-        log.info("Самые популярные {} фильмов в базе: {}", count, filmService.getCountOfTheBestFilms(count));
-        return filmService.getCountOfTheBestFilms(count);
+        Set<Film> bestFilms = filmService.getCountOfTheBestFilms(count);
+        log.info("Самые популярные {} фильмов в базе: {}", count, bestFilms);
+        return bestFilms;
     }
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film ) {
-        return inMemoryFilmStorage.createFilm(film);
+        return filmStorage.createFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        return inMemoryFilmStorage.updateFilm(film);
+        return filmStorage.updateFilm(film);
     }
 
     @PutMapping("/{id}/like/{userId}")

@@ -9,8 +9,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
-@Component
+@Component("InMemoryFilmStorage")
 @Slf4j
 @RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
@@ -23,8 +24,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilmById(int id) {
-        return films.get(id);
+    public Optional<Film> getFilmById(int id) {
+        if(films.get(id) != null) {
+            Film film = films.get(id);
+            return Optional.of(film);
+        } else return Optional.empty();
     }
 
     @Override
@@ -63,7 +67,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private boolean isExistById(Film film) {
-        boolean isExist = false;
+        var isExist = false;
         for (Film f : films.values()) {
             if (f.getId() == film.getId()) {
                 isExist = true;

@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,22 +28,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {FilmController.class, Film.class})
 @WebMvcTest
-public class FilmControllerTest {
+class FilmControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    Film film;
     @MockBean
     private FilmController filmController;
     private static final ObjectMapper mapper = new ObjectMapper();
     String json;
 
     @Test
-    public void testPostCorrectFilm() throws Exception {
+    void testPostCorrectFilm() throws Exception {
+        Film film = new Film();
         film.setId(1);
-        film.setName("nisi eiusmod1");
-        film.setDescription("adipisicing");
-        film.setReleaseDate(LocalDate.of(1967, 3, 25));
+        film.setName("Terminator");
+        film.setDescription("Film about killing machine");
+        film.setReleaseDate(LocalDate.of(1984, 10, 26));
         film.setDuration(100);
 
         Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);
@@ -56,19 +57,25 @@ public class FilmControllerTest {
         mockMvc.perform(builder)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", Matchers.equalTo(1)))
-                .andExpect(jsonPath("$.name", Matchers.equalTo("nisi eiusmod1")))
-                .andExpect(jsonPath("$.description", Matchers.equalTo("adipisicing")))
-                .andExpect(jsonPath("$.releaseDate", Matchers.equalTo("1967-03-25")))
+                .andExpect(jsonPath("$.name", Matchers.equalTo("Terminator")))
+                .andExpect(jsonPath("$.description", Matchers.equalTo("Film about killing machine")))
+                .andExpect(jsonPath("$.releaseDate", Matchers.equalTo("1984-10-26")))
                 .andExpect(jsonPath("$.duration", Matchers.equalTo(100)));
     }
 
-    @Test
-    public void testPostEmptyFilmName() throws Exception {
-        film.setId(1);
-        film.setName("");
-        film.setDescription("adipisicing");
-        film.setReleaseDate(LocalDate.of(1967, 3, 25));
-        film.setDuration(100);
+    @ParameterizedTest
+    @CsvSource({
+            "1,'',Film about killing machine,1984-10-26,100",
+            "1,Terminator,Film about killing machine,1767-03-25,100",
+            "1,Terminator,Film about killing machine,1984-10-26,-100",
+    })
+    void testPostFilmWithWrongParameters(int id, String name, String description, LocalDate releaseDate, int duration) throws Exception {
+        Film film = new Film();
+        film.setId(id);
+        film.setName(name);
+        film.setDescription(description);
+        film.setReleaseDate(releaseDate);
+        film.setDuration(duration);
 
         Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);
         json = mapper.writeValueAsString(film);
@@ -84,56 +91,15 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void testPostLongFilmDescription() throws Exception {
+    void testPostLongFilmDescription() throws Exception {
+        Film film = new Film();
         film.setId(1);
-        film.setName("nisi eiusmod1");
+        film.setName("Terminator");
         film.setDescription("The main film of the year 2009 is Avatar by James Cameron, the producer of such films " +
                 "as Terminator, Titanic, The Strangers. This film ranks with above-mentioned world-famous films and " +
                 "probably belongs to the science-fiction genre.");
-        film.setReleaseDate(LocalDate.of(1967, 3, 25));
+        film.setReleaseDate(LocalDate.of(1984, 10, 26));
         film.setDuration(100);
-
-        Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);
-        json = mapper.writeValueAsString(film);
-
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/films")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
-                .characterEncoding("utf-8")
-                .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostWrongReleaseDateFilm() throws Exception {
-        film.setId(1);
-        film.setName("nisi eiusmod1");
-        film.setDescription("adipisicing");
-        film.setReleaseDate(LocalDate.of(1767, 3, 25));
-        film.setDuration(100);
-
-        Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);
-        json = mapper.writeValueAsString(film);
-
-        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/films")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
-                .characterEncoding("utf-8")
-                .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(builder)
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void testPostNegativeFilmDuration() throws Exception {
-        film.setId(1);
-        film.setName("nisi eiusmod1");
-        film.setDescription("adipisicing");
-        film.setReleaseDate(LocalDate.of(1967, 3, 25));
-        film.setDuration(-100);
 
         Mockito.when(filmController.createFilm(ArgumentMatchers.any())).thenReturn(film);
         json = mapper.writeValueAsString(film);
