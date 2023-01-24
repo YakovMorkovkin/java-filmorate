@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -60,6 +61,36 @@ public class InMemoryFilmService implements FilmService {
     @Override
     public Optional<Mpa> getMpaById(int id) {
         return Optional.empty();
+    }
+
+    @Override
+    public Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy) {
+        return null;
+    }
+
+    @Override
+    public Set<Director> getAllDirectors() {
+        return null;
+    }
+
+    @Override
+    public Optional<Director> getDirectorById(int id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Director createDirector(Director director) {
+        return null;
+    }
+
+    @Override
+    public Director updateDirector(Director director) {
+        return null;
+    }
+
+    @Override
+    public void removeDirector(int id) {
+
     }
 
     private int compare(Film f0, Film f1) {

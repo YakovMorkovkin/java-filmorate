@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -22,4 +23,12 @@ public interface FilmService {
     Set<Mpa> getAllMpa();
 
     Optional<Mpa> getMpaById(int id);
+
+    Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy);
+
+    Set<Director> getAllDirectors();
+    Optional<Director> getDirectorById(int id);
+    Director createDirector(Director director);
+    Director updateDirector(Director director);
+    void removeDirector(int id);
 }

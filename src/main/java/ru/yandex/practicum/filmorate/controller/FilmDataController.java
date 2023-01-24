@@ -2,9 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
@@ -14,7 +14,7 @@ import java.util.Set;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-public class MpaGenreController {
+public class FilmDataController {
     private final FilmService filmService;
 
     @GetMapping("/genres")
@@ -39,5 +39,33 @@ public class MpaGenreController {
     public Mpa getMpaById(@PathVariable int id) {
         log.info("Жанр с id - {}", id);
         return filmService.getMpaById(id).orElse(null);
+    }
+
+    @GetMapping("/directors")
+    public Set<Director> getAllDirectors() {
+        log.info("Список режиссеров");
+        return filmService.getAllDirectors();
+    }
+
+    @GetMapping("/directors/{id}")
+    public Director getDirectorById(@PathVariable int id) {
+        log.info("Режиссер с id - {}", id);
+        return filmService.getDirectorById(id).orElse(null);
+    }
+
+    @PostMapping("/directors")
+    public Director createDirector(@RequestBody Director director ) {
+        return filmService.createDirector(director);
+    }
+
+    @PutMapping("/directors")
+    public Director updateDirector(@RequestBody Director director) {
+        return filmService.updateDirector(director);
+    }
+
+    @DeleteMapping("/directors/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void removeLike(@PathVariable int id) {
+        filmService.removeDirector(id);
     }
 }

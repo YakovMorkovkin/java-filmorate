@@ -34,6 +34,7 @@ public class Film implements Serializable {
     @Positive(message = "Длительность должна быть положительной.")
     private Integer duration;
     private Mpa mpa;
+    private Set<Director> director;
     private Set<Genre> genres;
 
     public void addLike(Integer userId) {

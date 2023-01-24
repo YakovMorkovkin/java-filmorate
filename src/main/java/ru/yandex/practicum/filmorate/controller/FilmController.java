@@ -39,6 +39,14 @@ public class FilmController {
         return film;
     }
 
+    @GetMapping("/director/{directorId}")
+    public Set<Film> getSortedFilmsByDirectorId(@PathVariable int directorId
+                                        ,@RequestParam(defaultValue = "year", required = false) String sortBy) {
+        Set<Film> filmsOfDirector = filmService.getSortedFilmsByDirectorId(directorId,sortBy);
+        log.info("Фильмы {} режиссера с id: {}", filmsOfDirector, directorId);
+        return filmsOfDirector;
+    }
+
     @GetMapping("/popular")
     public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) int count) {
         Set<Film> bestFilms = filmService.getCountOfTheBestFilms(count);
