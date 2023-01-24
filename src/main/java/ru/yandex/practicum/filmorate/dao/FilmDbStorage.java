@@ -55,7 +55,7 @@ public class FilmDbStorage implements FilmStorage {
             film.setReleaseDate(Objects.requireNonNull(filmRows.getDate("release_date")).toLocalDate());
             film.setDuration(filmRows.getInt("duration"));
             film.setMpa(makeMpa(filmRows));
-            film.setDirector(getFilmDirectors(filmRows.getInt("id")));
+            film.setDirectors(getFilmDirectors(filmRows.getInt("id")));
             film.setGenres(getFilmGenres(filmRows.getInt("id")));
 
             log.info("Найден фильм: {} {}", film.getName(), id);
@@ -94,8 +94,8 @@ public class FilmDbStorage implements FilmStorage {
                 });
             }
         }
-        if(film.getDirector() != null && !film.getDirector().isEmpty()) {
-            for (Director d : film.getDirector()) {
+        if(film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (Director d : film.getDirectors()) {
                 jdbcTemplate.update(connection -> {
                     PreparedStatement stmt = connection.prepareStatement(sql1);
                     stmt.setInt(1, recordId);
@@ -149,8 +149,8 @@ public class FilmDbStorage implements FilmStorage {
 
             String sql4 = "MERGE INTO films_director (film_id,director_id) VALUES (?,?) ";
 
-            if(film.getDirector() != null && !film.getDirector().isEmpty()) {
-                for (Director d : film.getDirector()) {
+            if(film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+                for (Director d : film.getDirectors()) {
                     jdbcTemplate.update(connection -> {
                         PreparedStatement stmt = connection.prepareStatement(sql4);
                         stmt.setInt(1,film.getId());
@@ -207,7 +207,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
         film.setMpa(makeMpa(rs));
-        film.setDirector(getFilmDirectors(rs.getInt("id")));
+        film.setDirectors(getFilmDirectors(rs.getInt("id")));
         film.setGenres(getFilmGenres(rs.getInt("id")));
 
         return film;

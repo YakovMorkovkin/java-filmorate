@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
+import javax.validation.Valid;
 import java.util.Set;
 
 @RestController
@@ -54,12 +55,12 @@ public class FilmDataController {
     }
 
     @PostMapping("/directors")
-    public Director createDirector(@RequestBody Director director ) {
+    public Director createDirector(@Valid  @RequestBody Director director ) {
         return filmService.createDirector(director);
     }
 
     @PutMapping("/directors")
-    public Director updateDirector(@RequestBody Director director) {
+    public Director updateDirector(@Valid @RequestBody Director director) {
         return filmService.updateDirector(director);
     }
 
