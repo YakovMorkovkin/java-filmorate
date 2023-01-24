@@ -66,7 +66,7 @@ public class FilmDataController {
 
     @DeleteMapping("/directors/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void removeLike(@PathVariable int id) {
+    public void removeDirector(@PathVariable int id) {
         filmService.removeDirector(id);
     }
 }

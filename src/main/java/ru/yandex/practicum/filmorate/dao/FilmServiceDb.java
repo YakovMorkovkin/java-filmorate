@@ -143,8 +143,8 @@ public class FilmServiceDb implements FilmService {
     @Override
     public Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy) {
         Set<Film> result = new HashSet<>();
-        String sortYear = "ORDER BY (EXTRACT(YEAR FROM CAST(f.release_date AS date))) DESC";
-        String sortLikes = "ORDER BY COUNT(fl.liked_by) DESC";
+        String sortByYear = "ORDER BY (EXTRACT(YEAR FROM CAST(f.release_date AS date))) DESC";
+        String sortByLikes = "ORDER BY COUNT(fl.liked_by) DESC";
         String sql = "SELECT f.id " +
                 "           ,f.name " +
                 "           ,f.description " +
@@ -155,17 +155,16 @@ public class FilmServiceDb implements FilmService {
                 "FROM films AS f " +
                 "INNER JOIN films_director AS fd ON f.id = fd.film_id " +
                 "INNER JOIN mpa ON f.mpa = mpa.id " +
-                "INNER JOIN film_likes AS fl ON fd.film_id = fl.film_id " +
+                "LEFT OUTER JOIN film_likes AS fl ON fd.film_id = fl.film_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.id ";
 
         if (!jdbcTemplate.query(sql, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId).isEmpty()) {
             if (sortBy.equals("year")) {
-                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortYear, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
+                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByYear, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
             } else if (sortBy.equals("likes"))
-                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortLikes, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
+                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByLikes, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
         }
-
         return result;
     }
 
