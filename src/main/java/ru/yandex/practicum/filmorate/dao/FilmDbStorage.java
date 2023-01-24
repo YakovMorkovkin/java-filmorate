@@ -94,10 +94,11 @@ public class FilmDbStorage implements FilmStorage {
                 });
             }
         }
+        String sql2 = "MERGE INTO films_director (film_id,director_id) VALUES (?,?) ";
         if(film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             for (Director d : film.getDirectors()) {
                 jdbcTemplate.update(connection -> {
-                    PreparedStatement stmt = connection.prepareStatement(sql1);
+                    PreparedStatement stmt = connection.prepareStatement(sql2);
                     stmt.setInt(1, recordId);
                     stmt.setInt(2, d.getId());
                     return stmt;
