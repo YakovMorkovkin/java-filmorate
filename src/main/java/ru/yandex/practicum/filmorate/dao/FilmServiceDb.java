@@ -143,7 +143,7 @@ public class FilmServiceDb implements FilmService {
     @Override
     public Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy) {
         Set<Film> result = new HashSet<>();
-        String sortByYear = "ORDER BY (EXTRACT(YEAR FROM CAST(f.release_date AS date))) DESC";
+        String sortByYear = "ORDER BY (EXTRACT(YEAR FROM CAST(f.release_date AS date)))";
         String sortByLikes = "ORDER BY COUNT(fl.liked_by) DESC";
         String sql = "SELECT f.id " +
                 "           ,f.name " +
@@ -164,7 +164,7 @@ public class FilmServiceDb implements FilmService {
                 result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByYear, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
             } else if (sortBy.equals("likes"))
                 result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByLikes, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
-        }
+        } else throw new NotFoundException("Не найдено фильмов режиссера с id  = " + directorId);
         return result;
     }
 
