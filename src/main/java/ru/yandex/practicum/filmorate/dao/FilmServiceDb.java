@@ -7,9 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import java.sql.ResultSet;
@@ -24,6 +22,7 @@ public class FilmServiceDb implements FilmService {
     private final JdbcTemplate jdbcTemplate;
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
+    private final EventDBStorage eventDBStorage;
     @Override
     public void addLike(Integer userId, Integer filmId) {
         if(userDbStorage.getUserById(userId).isPresent() &&filmDbStorage.getFilmById(filmId).isPresent()) {
@@ -34,6 +33,7 @@ public class FilmServiceDb implements FilmService {
                     , userId
             );
         } else throw new NotFoundException("Данные ошибочны.");
+        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     @Override
@@ -46,6 +46,7 @@ public class FilmServiceDb implements FilmService {
                 ,userId
         );
         } else throw new NotFoundException("Данные ошибочны.");
+        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
     }
 
     @Override
@@ -114,7 +115,7 @@ public class FilmServiceDb implements FilmService {
             mpa.setName(filmRows.getString("mpa_name"));
             return Optional.of(mpa);
         } else {
-            throw new NotFoundException("Рейтинга с id - " + id + "нет в базе.");
+            throw new NotFoundException("Рейтинга с id -" + id + " нет в базе.");
         }
     }
 

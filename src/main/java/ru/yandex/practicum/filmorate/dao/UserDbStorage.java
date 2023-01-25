@@ -96,7 +96,7 @@ public class UserDbStorage implements UserStorage {
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friends_with"), userId));
     }
 
-    private User makeUser(ResultSet rs) throws SQLException {
+    protected User makeUser(ResultSet rs) throws SQLException {
             User user = new User();
             user.setFriends(getFriends(rs.getInt("id")));
             user.setId(rs.getInt("id"));
@@ -105,6 +105,5 @@ public class UserDbStorage implements UserStorage {
             user.setName(rs.getString("name"));
             user.setBirthday(rs.getDate("birthday").toLocalDate());
             return user;
-
     }
 }

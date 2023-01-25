@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.EventDBStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -21,6 +23,7 @@ public class UserController {
 
     private final UserStorage userStorage;
     private final UserService userService;
+    private final EventDBStorage eventDBStorage;
 
 
     @GetMapping
@@ -71,5 +74,15 @@ public class UserController {
     public void removeFromFriends(@PathVariable int id, @PathVariable int friendId) {
         log.info("Пользователи с id-{} и id-{} удалены друг у друга из друзей", id, friendId);
         userService.removeFromFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable int id) {
+        if (eventDBStorage.getFeed(id).isEmpty()) {
+            throw new NotFoundException(" У пользователя не найдена лента событий");
+        }
+        List<Event> events = eventDBStorage.getFeed(id);
+        log.info("Лента событй пользователя с id-{}: {}", id, events);
+        return events;
     }
 }
