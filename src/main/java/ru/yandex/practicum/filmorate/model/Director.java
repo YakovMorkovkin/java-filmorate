@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class Director implements Serializable {
     private int id;
     @NotBlank
-    @NotEmpty(message = "Имя режиссера не может быть пустым.")
+    @NotEmpty(message = "РРјСЏ СЂРµР¶РёСЃСЃРµСЂР° РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.")
     private String name;
 
 }

@@ -33,7 +33,7 @@ public class EventDBStorage implements EventStorage {
 
     private Event makeEvent(ResultSet rs) throws SQLException {
         Event event = new Event();
-        event.setTimestamp(Instant.ofEpochSecond(rs.getInt("time_of_event")));
+        event.setTimestamp((rs.getLong("time_of_event")));
         event.setEventId(rs.getInt("event_id"));
         event.setUserId(rs.getInt("user_id"));
         event.setEntityId(rs.getInt("entity_id"));
@@ -55,7 +55,7 @@ public class EventDBStorage implements EventStorage {
 
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"event_id"});
-            stmt.setObject(1, Instant.now().toEpochMilli() / 1000);
+            stmt.setObject(1, Instant.now().toEpochMilli());
             stmt.setInt(2, userId);
             stmt.setInt(3, entityId);
             stmt.setString(4, eventType.toString());

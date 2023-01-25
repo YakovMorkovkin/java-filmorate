@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS film_likes
 
 CREATE TABLE IF NOT EXISTS user_events
 (
-    time_of_event    int8 NOT NULL,
+    time_of_event    bigint NOT NULL,
     user_id          int NOT NULL,
     event_type       varchar(10) NOT NULL,
     operation        varchar(10) NOT NULL,

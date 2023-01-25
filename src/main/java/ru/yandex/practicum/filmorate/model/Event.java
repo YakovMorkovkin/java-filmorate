@@ -4,18 +4,17 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
-import java.time.Instant;
 
 @Data
 public class Event implements Serializable {
-    private Instant timestamp;
+    private Long timestamp;
     private int eventId;
-    @NotEmpty(message = "Идентификатор пользователя не может быть пустым.")
+    @NotEmpty(message = "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.")
     private int userId;
-    @NotEmpty(message = "Идентификатор сущности не может быть пустым.")
+    @NotEmpty(message = "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃСѓС‰РЅРѕСЃС‚Рё РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.")
     private int entityId;
-    @NotEmpty(message = "Тип события не может быть пустым.")
+    @NotEmpty(message = "РўРёРї СЃРѕР±С‹С‚РёСЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.")
     private EventType eventType;
-    @NotEmpty(message = "Тип операции не может быть пустым.")
+    @NotEmpty(message = "РўРёРї РѕРїРµСЂР°С†РёРё РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.")
     private Operation operation;
 }
