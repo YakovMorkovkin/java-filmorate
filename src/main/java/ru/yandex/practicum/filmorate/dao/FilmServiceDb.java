@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("FilmServiceDb")
 @Slf4j
@@ -116,6 +117,15 @@ public class FilmServiceDb implements FilmService {
         } else {
             throw new NotFoundException("Рейтинга с id - " + id + "нет в базе.");
         }
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return filmDbStorage.getAllFilms().stream()
+                .filter(x -> x.getLikes().contains((long) userId))
+                .filter(x -> x.getLikes().contains((long) friendId))
+                .sorted(Comparator.comparing(x -> (-1) * x.getLikes().size()))
+                .collect(Collectors.toList());
     }
 
     Mpa makeMpa(ResultSet rs) throws SQLException {

@@ -10,8 +10,11 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -44,6 +47,13 @@ public class FilmController {
         Set<Film> bestFilms = filmService.getCountOfTheBestFilms(count);
         log.info("Самые популярные {} фильмов в базе: {}", count, bestFilms);
         return bestFilms;
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        Collection<Film> commonFilms = filmService.getCommonFilms(userId,friendId);
+        log.info("Общие фильмы фильмы пользователей {} и {} в базе: {}", userId, friendId ,commonFilms);
+        return commonFilms;
     }
 
     @PostMapping
