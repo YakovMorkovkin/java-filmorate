@@ -142,7 +142,6 @@ public class FilmServiceDb implements FilmService {
     }
 
     @Override
-<<<<<<< add-director
     public Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy) {
         Set<Film> result = new HashSet<>();
         String sortByYear = "ORDER BY (EXTRACT(YEAR FROM CAST(f.release_date AS date)))";
@@ -170,7 +169,8 @@ public class FilmServiceDb implements FilmService {
                         (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
         } else throw new NotFoundException("Не найдено фильмов режиссера с id  = " + directorId);
         return result;
-=======
+    }
+
     public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
         return filmDbStorage.getAllFilms().stream()
                 .filter(x -> x.getLikes().contains((long) userId))
@@ -179,13 +179,6 @@ public class FilmServiceDb implements FilmService {
                 .collect(Collectors.toList());
     }
 
-    Mpa makeMpa(ResultSet rs) throws SQLException {
-        Mpa mpa = new Mpa();
-        mpa.setId(rs.getInt("id"));
-        mpa.setName(rs.getString("mpa_name"));
-        return mpa;
->>>>>>> develop
-    }
 
     @Override
     public Set<Director> getAllDirectors() {

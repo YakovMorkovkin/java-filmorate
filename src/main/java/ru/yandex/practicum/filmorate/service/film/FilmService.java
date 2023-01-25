@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+
 @Service
 public interface FilmService {
     void addLike(Integer userId, Integer filmId);
@@ -25,15 +26,19 @@ public interface FilmService {
 
     Optional<Mpa> getMpaById(int id);
 
-<<<<<<< add-director
+
     Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy);
 
     Set<Director> getAllDirectors();
+
     Optional<Director> getDirectorById(int id);
+
     Director createDirector(Director director);
+
     Director updateDirector(Director director);
+
     void removeDirector(int id);
-=======
+
     Collection<Film> getCommonFilms(Integer userId, Integer friendId);
->>>>>>> develop
+
 }
