@@ -6,14 +6,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import java.sql.PreparedStatement;
@@ -47,7 +42,6 @@ public class FilmServiceDb implements FilmService {
     public void removeLike(Integer userId, Integer filmId) {
         if (userDbStorage.getUserById(userId).isPresent() && filmDbStorage.getFilmById(filmId).isPresent()) {
             String sql = "DELETE FROM film_likes WHERE film_id = ? AND liked_by = ?";
-
             jdbcTemplate.update(sql
                     , filmId
                     , userId
@@ -100,14 +94,10 @@ public class FilmServiceDb implements FilmService {
         String sql = "SELECT * " +
                 "FROM genre " +
                 "WHERE id = ?";
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
-        if (filmRows.next()) {
-            Genre genre = new Genre();
-            genre.setId(filmRows.getInt("id"));
-            genre.setName(filmRows.getString("genre_name"));
-            return Optional.of(genre);
+        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs), id).isEmpty()) {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeGenre(rs), id));
         } else {
-            throw new NotFoundException("Жанра с id - " + id + " нет в базе.");
+            throw new NotFoundException("Жанра с id -" + id + " нет в базе.");
         }
     }
 
@@ -130,14 +120,10 @@ public class FilmServiceDb implements FilmService {
         String sql = "SELECT * " +
                 "FROM mpa " +
                 "WHERE id = ?";
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
-        if (filmRows.next()) {
-            Mpa mpa = new Mpa();
-            mpa.setId(filmRows.getInt("id"));
-            mpa.setName(filmRows.getString("mpa_name"));
-            return Optional.of(mpa);
+        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeMpa(rs), id).isEmpty()) {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeMpa(rs), id));
         } else {
-            throw new NotFoundException("Рейтинга с id - " + id + "нет в базе.");
+            throw new NotFoundException("Рейтинга с id -" + id + " нет в базе.");
         }
     }
 
@@ -159,7 +145,6 @@ public class FilmServiceDb implements FilmService {
                 "LEFT OUTER JOIN film_likes AS fl ON fd.film_id = fl.film_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.id ";
-
         if (!jdbcTemplate.query(sql, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId).isEmpty()) {
             if (sortBy.equals("year")) {
                 result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByYear,
@@ -204,7 +189,7 @@ public class FilmServiceDb implements FilmService {
         if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeDirector(rs), id).isEmpty()) {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeDirector(rs), id));
         } else {
-            throw new NotFoundException("Режиссера с id - " + id + " нет в базе.");
+            throw new NotFoundException("Режиссера с id -" + id + " нет в базе.");
         }
     }
 
@@ -212,7 +197,6 @@ public class FilmServiceDb implements FilmService {
     public Director createDirector(Director director) {
         String sql = "INSERT INTO directors (director_name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
             stmt.setString(1, director.getName());
@@ -224,18 +208,15 @@ public class FilmServiceDb implements FilmService {
 
     @Override
     public Director updateDirector(Director director) {
-
         if (getDirectorById(director.getId()).orElse(null) == null) {
             throw new NotFoundException("Режиссера с id - " + director.getId() + "нет в базе данных.");
         } else {
             String sql = "UPDATE directors " +
                     "SET director_name = ? " +
                     "WHERE id = ?";
-
             jdbcTemplate.update(sql
                     , director.getName()
                     , director.getId()
-
             );
             return getDirectorById(director.getId()).orElse(null);
         }
@@ -244,7 +225,6 @@ public class FilmServiceDb implements FilmService {
     @Override
     public void removeDirector(int id) {
         String sql = "DELETE FROM directors WHERE id = ?";
-
         jdbcTemplate.update(sql, id);
     }
 }

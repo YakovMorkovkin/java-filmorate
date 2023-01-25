@@ -75,7 +75,6 @@ public class FilmDbStorage implements FilmStorage {
     public Film createFilm(Film film) {
         String sql = "INSERT INTO films (name, description, release_date, duration, mpa) VALUES (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
             stmt.setString(1, film.getName());
@@ -95,7 +94,6 @@ public class FilmDbStorage implements FilmStorage {
                             preparedStatement.setInt(1, recordId);
                             preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
                         }
-
                         @Override
                         public int getBatchSize() {
                             return film.getGenres().size();
@@ -111,7 +109,6 @@ public class FilmDbStorage implements FilmStorage {
                             preparedStatement.setInt(1, recordId);
                             preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
                         }
-
                         @Override
                         public int getBatchSize() {
                             return film.getDirectors().size();
@@ -129,7 +126,6 @@ public class FilmDbStorage implements FilmStorage {
             String sql = "UPDATE films " +
                     "SET name = ?, description = ?, release_date = ?, duration = ?, mpa = ? " +
                     "WHERE id = ?";
-
             jdbcTemplate.update(sql
                     , film.getName()
                     , film.getDescription()
@@ -137,41 +133,40 @@ public class FilmDbStorage implements FilmStorage {
                     , film.getDuration()
                     , film.getMpa().getId()
                     , film.getId()
-
             );
 
-            String sql1 = "DELETE FROM films_genre WHERE film_id = ?";
-
-            jdbcTemplate.update(sql1, film.getId());
-
-            String sql2 = "MERGE INTO films_genre (film_id,genre_id) VALUES (?,?) ";
+            jdbcTemplate.update("DELETE FROM films_genre WHERE film_id = ?", film.getId());
 
             if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-                for (Genre g : film.getGenres()) {
-                    jdbcTemplate.update(connection -> {
-                        PreparedStatement stmt = connection.prepareStatement(sql2);
-                        stmt.setInt(1, film.getId());
-                        stmt.setInt(2, g.getId());
-                        return stmt;
-                    });
-                }
+                jdbcTemplate.batchUpdate("MERGE INTO films_genre (film_id,genre_id) VALUES (?,?)"
+                        , new BatchPreparedStatementSetter() {
+                            @Override
+                            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                                preparedStatement.setInt(1, film.getId());
+                                preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
+                            }
+                            @Override
+                            public int getBatchSize() {
+                                return film.getGenres().size();
+                            }
+                        });
             }
 
-            String sql3 = "DELETE FROM films_director WHERE film_id = ?";
-
-            jdbcTemplate.update(sql3, film.getId());
-
-            String sql4 = "MERGE INTO films_director (film_id,director_id) VALUES (?,?) ";
+            jdbcTemplate.update("DELETE FROM films_director WHERE film_id = ?", film.getId());
 
             if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-                for (Director d : film.getDirectors()) {
-                    jdbcTemplate.update(connection -> {
-                        PreparedStatement stmt = connection.prepareStatement(sql4);
-                        stmt.setInt(1, film.getId());
-                        stmt.setInt(2, d.getId());
-                        return stmt;
-                    });
-                }
+                jdbcTemplate.batchUpdate("MERGE INTO films_director (film_id,director_id) VALUES (?,?) "
+                        , new BatchPreparedStatementSetter() {
+                            @Override
+                            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                                preparedStatement.setInt(1, film.getId());
+                                preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
+                            }
+                            @Override
+                            public int getBatchSize() {
+                                return film.getDirectors().size();
+                            }
+                        });
             }
         }
         return getFilmById(film.getId()).orElse(null);

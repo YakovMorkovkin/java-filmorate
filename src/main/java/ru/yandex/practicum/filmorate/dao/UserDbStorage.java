@@ -6,10 +6,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -36,7 +34,6 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUserById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
-
         if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id).isEmpty()) {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeUser(rs), id));
         } else {
@@ -48,7 +45,6 @@ public class UserDbStorage implements UserStorage {
     public User createUser(User user) {
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
             stmt.setString(1, user.getEmail());
@@ -75,7 +71,7 @@ public class UserDbStorage implements UserStorage {
                 , user.getBirthday()
                 , user.getId()
         );
-        if (getUserById(user.getId()).isEmpty()) {
+        if(getUserById(user.getId()).isEmpty()) {
             throw new NotFoundException("Пользователя с id: " + user.getId() + " не существует");
         } else return getUserById(user.getId()).orElse(null);
     }
