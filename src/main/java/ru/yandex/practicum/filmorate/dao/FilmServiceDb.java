@@ -15,8 +15,10 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-
 import static java.util.Comparator.comparing;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 @Service("FilmServiceDb")
 @Slf4j
@@ -109,6 +111,15 @@ public class FilmServiceDb implements FilmService {
         return mpaSet;
     }
 
+    @Override
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return filmDbStorage.getAllFilms().stream()
+                .filter(x -> x.getLikes().contains((long) userId))
+                .filter(x -> x.getLikes().contains((long) friendId))
+                .sorted(Comparator.comparing(x -> (-1) * x.getLikes().size()))
+                .collect(Collectors.toList());
+    }
+    
     Mpa makeMpa(ResultSet rs) throws SQLException {
         Mpa mpa = new Mpa();
         mpa.setId(rs.getInt("id"));
