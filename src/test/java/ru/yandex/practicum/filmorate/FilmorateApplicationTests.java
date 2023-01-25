@@ -32,8 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SqlGroup({
 		@Sql(scripts = {"/schema.sql"},config = @SqlConfig(encoding = "UTF-8")),
-		@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "/test-data.sql"),
-		@Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "/drop-test-data.sql"),
+		@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "/test-data.sql",config = @SqlConfig(encoding = "UTF-8")),
+		@Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "/drop-test-data.sql",config = @SqlConfig(encoding = "UTF-8")),
 })
 @Slf4j
 class FilmorateApplicationTests {

@@ -24,11 +24,12 @@ public class UserServiceDb implements UserService {
     private final JdbcTemplate jdbcTemplate;
     private final UserDbStorage userDbStorage;
     private final EventDBStorage eventDBStorage;
+
     @Override
     public void addToFriends(Integer userId, Integer friendId) {
 
-        if(userDbStorage.getUserById(userId).isEmpty() || userDbStorage.getUserById(friendId).isEmpty()){
-            throw new NotFoundException("Пользователя с id: " + userId +" или с id: " + friendId + " не существует");
+        if (userDbStorage.getUserById(userId).isEmpty() || userDbStorage.getUserById(friendId).isEmpty()) {
+            throw new NotFoundException("Пользователя с id: " + userId + " или с id: " + friendId + " не существует");
         } else {
             String sql = "INSERT INTO user_friends (user_id,friends_with,confirmation) " +
                     "VALUES (?,?, NVL2 " +
@@ -51,13 +52,13 @@ public class UserServiceDb implements UserService {
         String sql = "DELETE FROM user_friends WHERE user_id = ? AND friends_with = ?";
 
         jdbcTemplate.update(sql
-                ,userId
-                ,friendId
+                , userId
+                , friendId
         );
 
         jdbcTemplate.update(sql
-                ,friendId
-                ,userId
+                , friendId
+                , userId
         );
         eventDBStorage.addEventToUserFeed(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }

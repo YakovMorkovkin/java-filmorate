@@ -3,10 +3,10 @@ package ru.yandex.practicum.filmorate.dao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -42,26 +42,31 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films AS f " +
                 "INNER JOIN mpa ON f.mpa = mpa.id " +
                 "WHERE f.id = ?";
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
-
-        if (filmRows.next()) {
-            Film film = new Film();
-
-            film.setLikes(getFilmLikes(filmRows.getInt("id")));
-            film.setId(filmRows.getInt("id"));
-            film.setName(filmRows.getString("name"));
-            film.setDescription(filmRows.getString("description"));
-            film.setReleaseDate(Objects.requireNonNull(filmRows.getDate("release_date")).toLocalDate());
-            film.setDuration(filmRows.getInt("duration"));
-            film.setMpa(makeMpa(filmRows));
-            film.setGenres(getFilmGenres(filmRows.getInt("id")));
-
-            log.info("Найден фильм: {} {}", film.getName(), id);
-            return Optional.of(film);
+        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), id).isEmpty()) {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeFilm(rs), id));
         } else {
-            log.info("Фильм с идентификатором {} не найден.", id);
-            return Optional.empty();
+            throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
+    }
+
+    protected Film makeFilm(ResultSet rs) throws SQLException {
+        Film film = new Film();
+        film.setLikes(getFilmLikes(rs.getInt("id")));
+        film.setId(rs.getInt("id"));
+        film.setName(rs.getString("name"));
+        film.setDescription(rs.getString("description"));
+        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+        film.setDuration(rs.getInt("duration"));
+        film.setMpa(makeMpa(rs));
+        film.setGenres(getFilmGenres(rs.getInt("id")));
+        return film;
+    }
+
+    Mpa makeMpa(ResultSet rs) throws SQLException {
+        Mpa mpa = new Mpa();
+        mpa.setId(rs.getInt("mpa"));
+        mpa.setName(rs.getString("mpa_name"));
+        return mpa;
     }
 
     @Override
@@ -80,17 +85,20 @@ public class FilmDbStorage implements FilmStorage {
         }, keyHolder);
 
         int recordId = Objects.requireNonNull(keyHolder.getKey()).intValue();
-        String sql1 = "MERGE INTO films_genre (film_id,genre_id) VALUES (?,?)";
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            jdbcTemplate.batchUpdate("MERGE INTO films_genre (film_id,genre_id) VALUES (?,?)"
+                    , new BatchPreparedStatementSetter() {
+                        @Override
+                        public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                            preparedStatement.setInt(1, recordId);
+                            preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
+                        }
 
-        if(film.getGenres() != null && !film.getGenres().isEmpty()) {
-            for (Genre g : film.getGenres()) {
-                jdbcTemplate.update(connection -> {
-                    PreparedStatement stmt = connection.prepareStatement(sql1);
-                    stmt.setInt(1, recordId);
-                    stmt.setInt(2, g.getId());
-                    return stmt;
-                });
-            }
+                        @Override
+                        public int getBatchSize() {
+                            return film.getGenres().size();
+                        }
+                    });
         }
         return getFilmById(recordId).orElse(null);
     }
@@ -101,8 +109,8 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Фильма с id - " + film.getId() + "нет в базе данных.");
         } else {
             String sql = "UPDATE films " +
-                         "SET name = ?, description = ?, release_date = ?, duration = ?, mpa = ? " +
-                         "WHERE id = ?";
+                    "SET name = ?, description = ?, release_date = ?, duration = ?, mpa = ? " +
+                    "WHERE id = ?";
 
             jdbcTemplate.update(sql
                     , film.getName()
@@ -130,6 +138,10 @@ public class FilmDbStorage implements FilmStorage {
                     });
                 }
             }
+
+            String sql3 = "DELETE FROM films_director WHERE film_id = ?";
+            jdbcTemplate.update(sql3, film.getId());
+
         }
         return getFilmById(film.getId()).orElse(null);
     }
@@ -146,35 +158,11 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs), filmId));
     }
-    Film makeFilm(ResultSet rs) throws SQLException {
-        Film film = new Film();
-        film.setLikes(getFilmLikes(rs.getInt("id")));
-        film.setId(rs.getInt("id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-        film.setDuration(rs.getInt("duration"));
-        film.setMpa(makeMpa(rs));
-        film.setGenres(getFilmGenres(rs.getInt("id")));
 
-        return film;
-    }
     Genre makeGenre(ResultSet rs) throws SQLException {
         Genre genre = new Genre();
         genre.setId(rs.getInt("genre_id"));
         genre.setName(rs.getString("genre_name"));
         return genre;
-    }
-    Mpa makeMpa(ResultSet rs) throws SQLException {
-        Mpa mpa = new Mpa();
-        mpa.setId(rs.getInt("mpa"));
-        mpa.setName(rs.getString("mpa_name"));
-        return mpa;
-    }
-    Mpa makeMpa(SqlRowSet sqlRowSet) {
-        Mpa mpa = new Mpa();
-        mpa.setId(sqlRowSet.getInt("mpa"));
-        mpa.setName(sqlRowSet.getString("mpa_name"));
-        return mpa;
     }
 }
