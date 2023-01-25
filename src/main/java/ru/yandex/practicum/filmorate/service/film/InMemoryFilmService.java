@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +42,15 @@ public class InMemoryFilmService implements FilmService {
                 .sorted(this::compare)
                 .limit(count)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return inMemoryFilmStorage.getAllFilms().stream()
+                .filter(x -> x.getLikes().contains((long) userId))
+                .filter(x -> x.getLikes().contains((long) friendId))
+                .sorted(Comparator.comparing(x -> (-1) * x.getLikes().size()))
+                .collect(Collectors.toList());
     }
 
     @Override

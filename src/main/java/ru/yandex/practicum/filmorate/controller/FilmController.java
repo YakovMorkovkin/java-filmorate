@@ -51,11 +51,9 @@ public class FilmController {
 
     @GetMapping("/common")
     public Collection<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
-        return filmStorage.getAllFilms().stream()
-                .filter(x -> x.getLikes().contains((long) userId))
-                .filter(x -> x.getLikes().contains((long) friendId))
-                .sorted(Comparator.comparing(x -> (-1) * x.getLikes().size()))
-                .collect(Collectors.toList());
+        Collection<Film> commonFilms = filmService.getCommonFilms(userId,friendId);
+        log.info("Общие фильмы фильмы пользователей {} и {} в базе: {}", userId, friendId ,commonFilms);
+        return commonFilms;
     }
 
     @PostMapping
