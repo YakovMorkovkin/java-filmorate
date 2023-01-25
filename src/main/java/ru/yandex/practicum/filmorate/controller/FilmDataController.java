@@ -50,12 +50,12 @@ public class FilmDataController {
 
     @GetMapping("/directors/{id}")
     public Director getDirectorById(@PathVariable int id) {
-        log.info("Режиссер с id - {}", id);
+        log.info("Режиссер с id-{}:", id);
         return filmService.getDirectorById(id).orElse(null);
     }
 
     @PostMapping("/directors")
-    public Director createDirector(@Valid  @RequestBody Director director ) {
+    public Director createDirector(@Valid @RequestBody Director director) {
         return filmService.createDirector(director);
     }
 

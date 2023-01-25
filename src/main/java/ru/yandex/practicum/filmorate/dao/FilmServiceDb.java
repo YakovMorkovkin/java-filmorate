@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -30,17 +31,15 @@ public class FilmServiceDb implements FilmService {
     private final JdbcTemplate jdbcTemplate;
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
+    private final EventDBStorage eventDBStorage;
 
     @Override
     public void addLike(Integer userId, Integer filmId) {
         if (userDbStorage.getUserById(userId).isPresent() && filmDbStorage.getFilmById(filmId).isPresent()) {
             String sql = "INSERT INTO film_likes (film_id,liked_by) VALUES (?,?)";
-
-            jdbcTemplate.update(sql
-                    , filmId
-                    , userId
-            );
+            jdbcTemplate.update(sql, filmId, userId);
         } else throw new NotFoundException("Данные ошибочны.");
+        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     @Override
@@ -53,6 +52,7 @@ public class FilmServiceDb implements FilmService {
                     , userId
             );
         } else throw new NotFoundException("Данные ошибочны.");
+        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class FilmServiceDb implements FilmService {
             genre.setName(filmRows.getString("genre_name"));
             return Optional.of(genre);
         } else {
-            throw new NotFoundException("Жанра с id - " + id + "нет в базе.");
+            throw new NotFoundException("Жанра с id - " + id + " нет в базе.");
         }
     }
 
@@ -161,9 +161,11 @@ public class FilmServiceDb implements FilmService {
 
         if (!jdbcTemplate.query(sql, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId).isEmpty()) {
             if (sortBy.equals("year")) {
-                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByYear, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
+                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByYear,
+                        (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
             } else if (sortBy.equals("likes"))
-                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByLikes, (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
+                result = new LinkedHashSet<>(jdbcTemplate.query(sql + sortByLikes,
+                        (rs, rowNum) -> filmDbStorage.makeFilm(rs), directorId));
         } else throw new NotFoundException("Не найдено фильмов режиссера с id  = " + directorId);
         return result;
     }
@@ -189,14 +191,10 @@ public class FilmServiceDb implements FilmService {
         String sql = "SELECT * " +
                 "FROM directors " +
                 "WHERE id = ?";
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
-        if (filmRows.next()) {
-            Director director = new Director();
-            director.setId(filmRows.getInt("id"));
-            director.setName(filmRows.getString("director_name"));
-            return Optional.of(director);
+        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeDirector(rs), id).isEmpty()) {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeDirector(rs), id));
         } else {
-            throw new NotFoundException("Режиссера с id - " + id + "нет в базе.");
+            throw new NotFoundException("Режиссера с id - " + id + " нет в базе.");
         }
     }
 
