@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -58,6 +59,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
         film.setMpa(makeMpa(rs));
+        film.setDirectors(getFilmDirectors(rs.getInt("id")));
+
         film.setGenres(getFilmGenres(rs.getInt("id")));
         return film;
     }
@@ -73,7 +76,6 @@ public class FilmDbStorage implements FilmStorage {
     public Film createFilm(Film film) {
         String sql = "INSERT INTO films (name, description, release_date, duration, mpa) VALUES (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
             stmt.setString(1, film.getName());
@@ -93,10 +95,24 @@ public class FilmDbStorage implements FilmStorage {
                             preparedStatement.setInt(1, recordId);
                             preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
                         }
-
                         @Override
                         public int getBatchSize() {
                             return film.getGenres().size();
+                        }
+                    });
+        }
+
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            jdbcTemplate.batchUpdate("MERGE INTO films_director (film_id,director_id) VALUES (?,?) "
+                    , new BatchPreparedStatementSetter() {
+                        @Override
+                        public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                            preparedStatement.setInt(1, recordId);
+                            preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
+                        }
+                        @Override
+                        public int getBatchSize() {
+                            return film.getDirectors().size();
                         }
                     });
         }
@@ -119,24 +135,40 @@ public class FilmDbStorage implements FilmStorage {
                     , film.getDuration()
                     , film.getMpa().getId()
                     , film.getId()
-
             );
 
-            String sql1 = "DELETE FROM films_genre WHERE film_id = ?";
-
-            jdbcTemplate.update(sql1, film.getId());
-
-            String sql2 = "MERGE INTO films_genre (film_id,genre_id) VALUES (?,?) ";
+            jdbcTemplate.update("DELETE FROM films_genre WHERE film_id = ?", film.getId());
 
             if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-                for (Genre g : film.getGenres()) {
-                    jdbcTemplate.update(connection -> {
-                        PreparedStatement stmt = connection.prepareStatement(sql2);
-                        stmt.setInt(1, film.getId());
-                        stmt.setInt(2, g.getId());
-                        return stmt;
-                    });
-                }
+                jdbcTemplate.batchUpdate("MERGE INTO films_genre (film_id,genre_id) VALUES (?,?)"
+                        , new BatchPreparedStatementSetter() {
+                            @Override
+                            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                                preparedStatement.setInt(1, film.getId());
+                                preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
+                            }
+                            @Override
+                            public int getBatchSize() {
+                                return film.getGenres().size();
+                            }
+                        });
+            }
+
+            jdbcTemplate.update("DELETE FROM films_director WHERE film_id = ?", film.getId());
+
+            if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+                jdbcTemplate.batchUpdate("MERGE INTO films_director (film_id,director_id) VALUES (?,?) "
+                        , new BatchPreparedStatementSetter() {
+                            @Override
+                            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                                preparedStatement.setInt(1, film.getId());
+                                preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
+                            }
+                            @Override
+                            public int getBatchSize() {
+                                return film.getDirectors().size();
+                            }
+                        });
             }
 
             String sql3 = "DELETE FROM films_director WHERE film_id = ?";
@@ -164,5 +196,18 @@ public class FilmDbStorage implements FilmStorage {
         genre.setId(rs.getInt("genre_id"));
         genre.setName(rs.getString("genre_name"));
         return genre;
+    }
+    private Set<Director> getFilmDirectors(Integer filmId) {
+        String sql = "SELECT * " +
+                "FROM films_director AS fd " +
+                "INNER JOIN directors AS d ON fd.director_id = d.id " +
+                "WHERE fd.film_id = ?";
+        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeDirector(rs), filmId));
+    }
+    private Director makeDirector(ResultSet rs) throws SQLException {
+        Director director = new Director();
+        director.setId(rs.getInt("director_id"));
+        director.setName(rs.getString("director_name"));
+        return director;
     }
 }

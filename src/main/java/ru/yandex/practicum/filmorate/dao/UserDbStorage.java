@@ -34,7 +34,6 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUserById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
-
         if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id).isEmpty()) {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeUser(rs), id));
         } else {
@@ -46,7 +45,6 @@ public class UserDbStorage implements UserStorage {
     public User createUser(User user) {
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
             stmt.setString(1, user.getEmail());
@@ -73,7 +71,7 @@ public class UserDbStorage implements UserStorage {
                 , user.getBirthday()
                 , user.getId()
         );
-        if (getUserById(user.getId()).isEmpty()) {
+        if(getUserById(user.getId()).isEmpty()) {
             throw new NotFoundException("Пользователя с id: " + user.getId() + " не существует");
         } else return getUserById(user.getId()).orElse(null);
     }

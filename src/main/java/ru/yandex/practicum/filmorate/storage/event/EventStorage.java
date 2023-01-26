@@ -9,7 +9,7 @@ import java.util.List;
 
 @Component
 public interface EventStorage {
-
     List<Event> getFeed(int id);
     void addEventToUserFeed(int userId, int entityId, EventType eventType, Operation operation);
 }
+
