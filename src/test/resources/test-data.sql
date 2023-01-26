@@ -13,6 +13,12 @@ MERGE INTO genre (id,genre_name)
            (5,'Документальный'),
            (6,'Боевик');
 
+MERGE INTO directors (id,director_name)
+VALUES (1,'Стивен Спилберг'),
+       (2,'Френсис Форд Коппола'),
+       (3,'Джеймс Кэмерон'),
+       (4,'Гай Ричи');
+
 INSERT INTO users  (EMAIL, LOGIN, NAME, BIRTHDAY)
 VALUES ('user1@mail.ru', 'login1','Alex','19830623'),
        ('user2@mail.ru', 'login2','Piter','19831123'),
