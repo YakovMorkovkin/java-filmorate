@@ -4,13 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ResourceException;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -39,7 +37,6 @@ public class ReviewServiceDb implements ReviewService {
     public Review create(Review review) {
         checkUserId(review.getUserId());
         checkFilmId(review.getFilmId());
-        checkReview(review);
         review.setUseful(0);
         String sql = "INSERT INTO REVIEWS (content, isPositive, user_id, film_id, useful, dateOfPublication) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
@@ -95,7 +92,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public Review getReviewById(int id) {
-        log.info("Получение отзыва с id %d", id);
+        log.info("Получение отзыва с id {}", id);
         String sql = "select * from reviews " +
                 "where id = ?";
         try {
@@ -198,12 +195,6 @@ public class ReviewServiceDb implements ReviewService {
     private void checkFilmId(int id) {
         if (filmDbStorage.getFilmById(id).isEmpty()) {
             throw new NotFoundException("Фильм с таким id не найден.");
-        }
-    }
-
-    private void checkReview(Review review) {
-        if (review.getContent() == null) {
-            throw new ResourceException(HttpStatus.INTERNAL_SERVER_ERROR, "Отзыв не может быть пустым.");
         }
     }
 }
