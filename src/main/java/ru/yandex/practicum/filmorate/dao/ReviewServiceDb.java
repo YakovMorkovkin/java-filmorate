@@ -71,11 +71,11 @@ public class ReviewServiceDb implements ReviewService {
         jdbcTemplate.update(sql,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getDateOfPublication(),
+                Timestamp.valueOf(LocalDateTime.now()),
                 review.getReviewId());
 
         log.info("Отзыв обновлен: {}", review);
-        return review;
+        return getReviewById(review.getReviewId());
     }
 
     @Override
@@ -105,12 +105,7 @@ public class ReviewServiceDb implements ReviewService {
         log.info("Получение списка отзывов в количестве {}", count);
         String sql = "select * from reviews " +
                 "order by useful DESC LIMIT " + count;
-        List<Review> reviews = jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs));
-        if (reviews.isEmpty()) {
-            throw new NotFoundException("Список пуст.");
-        } else {
-            return reviews;
-        }
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs));
     }
 
     @Override
