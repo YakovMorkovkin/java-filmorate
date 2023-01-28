@@ -55,6 +55,11 @@ public class InMemoryFilmService implements FilmService {
     }
 
     @Override
+    public Collection<Film> searchFilms(String query, String by) {
+        return null;
+    }
+
+    @Override
     public Set<Genre> getAllGenres() {
         return null;
     }

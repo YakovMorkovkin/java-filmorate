@@ -164,6 +164,48 @@ public class FilmServiceDb implements FilmService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Collection<Film> searchFilms(String query, String by) {
+        Set<Film> result = new HashSet<>();
+        final String sql = "SELECT f.id " +
+                "           ,f.name " +
+                "           ,f.description " +
+                "           ,f.release_date " +
+                "           ,f.duration " +
+                "           ,f.mpa " +
+                "           ,mpa.mpa_name " +
+                "           ,COUNT(fl.liked_by) as count " +
+                "FROM films AS f " +
+                "LEFT OUTER JOIN mpa ON f.mpa = mpa.id " +
+                "LEFT OUTER JOIN films_director AS fd ON f.id = fd.film_id " +
+                "LEFT OUTER JOIN directors AS d ON fd.director_id = d.id " +
+                "LEFT OUTER JOIN film_likes AS fl ON fd.film_id = fl.film_id ";
+
+        final String byTitle = "WHERE LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%')) GROUP BY f.id ";
+        final String byDirector = "WHERE LOWER(d.director_name) LIKE LOWER(CONCAT('%', ?, '%')) GROUP BY f.id ";
+        final String order = "ORDER BY COUNT DESC";
+
+        switch (by) {
+            case "title":
+                String sqlByTitle = sql + byTitle + order;
+                result = new LinkedHashSet<>(jdbcTemplate.query(sqlByTitle,
+                        (rs, rowNum) -> filmDbStorage.makeFilm(rs), query));
+                break;
+            case "director":
+                String sqlByDirector = sql + byDirector + order;
+                result = new LinkedHashSet<>(jdbcTemplate.query(sqlByDirector,
+                        (rs, rowNum) -> filmDbStorage.makeFilm(rs), query));
+                break;
+            case "title,director":
+            case "director,title":
+                String sqlByTitleByDirector = sql + byTitle + " UNION ALL " + sql + byDirector + order;
+                result = new LinkedHashSet<>(jdbcTemplate.query(sqlByTitleByDirector,
+                        (rs, rowNum) -> filmDbStorage.makeFilm(rs), query, query));
+                break;
+        }
+        return result;
+    }
+
 
     @Override
     public Set<Director> getAllDirectors() {
