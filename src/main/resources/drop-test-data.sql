@@ -3,4 +3,6 @@ DROP TABLE films CASCADE;
 DROP TABLE user_friends CASCADE;
 DROP TABLE film_likes CASCADE;
 DROP TABLE films_genre CASCADE;
+DROP TABLE reviews CASCADE;
+DROP TABLE review_likes CASCADE;
 
