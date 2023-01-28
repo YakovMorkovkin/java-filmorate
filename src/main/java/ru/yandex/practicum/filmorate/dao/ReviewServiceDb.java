@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResourceException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.review.ReviewService;
 
@@ -123,6 +121,7 @@ public class ReviewServiceDb implements ReviewService {
         String sql = "INSERT INTO REVIEW_LIKES (review_id, user_id, islike) " +
                 "VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, id, userId, true);
+        calcUseful(true, id);
     }
 
     @Override
@@ -131,6 +130,7 @@ public class ReviewServiceDb implements ReviewService {
         String sql = "INSERT INTO REVIEW_LIKES (review_id, user_id, islike) " +
                 "VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, id, userId, false);
+        calcUseful(false, id);
     }
 
     @Override
@@ -138,6 +138,7 @@ public class ReviewServiceDb implements ReviewService {
         checkReviewId(id);
         String sql = "delete from REVIEW_LIKES where review_id = ? and user_id = ? and islike = ?";
         jdbcTemplate.update(sql, id, userId, false);
+        calcUseful(false, id);
     }
 
     @Override
@@ -145,6 +146,7 @@ public class ReviewServiceDb implements ReviewService {
         checkReviewId(id);
         String sql = "delete from REVIEW_LIKES where review_id = ? and user_id = ? and islike = ?";
         jdbcTemplate.update(sql, id, userId, true);
+        calcUseful(true, id);
     }
 
     private Review makeReview(ResultSet rs) throws SQLException {
@@ -157,6 +159,21 @@ public class ReviewServiceDb implements ReviewService {
                 .useful(rs.getInt("useful"))
                 .dateOfPublication(rs.getTimestamp("dateOfPublication").toLocalDateTime())
                 .build();
+    }
+
+    private void calcUseful (boolean isLike, int reviewId) {
+        String sql = "UPDATE REVIEWS SET useful = ? " +
+                "WHERE id = ?";
+        int newUseful;
+        int oldUseful = getReviewById(reviewId).getUseful();
+        if (isLike) {
+            newUseful = oldUseful + 1;
+        } else {
+            newUseful = oldUseful - 1;
+        }
+        jdbcTemplate.update(sql,
+                newUseful,
+                reviewId);
     }
 
     private void checkReviewId(int id) {
