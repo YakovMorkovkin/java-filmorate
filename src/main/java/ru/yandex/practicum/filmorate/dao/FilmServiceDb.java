@@ -75,7 +75,33 @@ public class FilmServiceDb implements FilmService {
         return result;
     }
 
-    public Set<Genre> getAllGenres() {
+    public Set<Film> getPopularFilmsByGenreOrYear(Integer genreId, Integer year, Integer count) {
+        String sql = "SELECT f.id AS id, f.name, f.description, f.release_date, f.duration, f.mpa, m.id, m.mpa_name " +
+                "FROM films f " +
+                "LEFT JOIN film_likes fl on f.id = fl.film_id " +
+                "INNER JOIN mpa m on f.mpa = m.id " +
+                "INNER JOIN films_genre fg ON f.id = fg.film_id " +
+                "WHERE fg.genre_id = ? OR EXTRACT(YEAR FROM CAST(f.release_date AS date)) = ? " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(fl.liked_by) " +
+                "LIMIT ?";
+
+        if (genreId != null && year != null) {
+            sql = "SELECT f.id AS id, f.name, f.description, f.release_date, f.duration, f.mpa, m.id, m.mpa_name " +
+                    "FROM films f " +
+                    "LEFT JOIN film_likes fl on f.id = fl.film_id " +
+                    "INNER JOIN mpa m on f.mpa = m.id " +
+                    "INNER JOIN films_genre fg ON f.id = fg.film_id " +
+                    "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM CAST(f.release_date AS date)) = ? " +
+                    "GROUP BY f.id " +
+                    "ORDER BY COUNT(fl.liked_by) " +
+                    "LIMIT ?";
+        }
+
+        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> filmDbStorage.makeFilm(rs), genreId, year, count));
+    }
+
+    public Set<Genre> getAllGenres(){
         String sql = "SELECT * " +
                 "FROM genre ";
         TreeSet<Genre> genreSet = new TreeSet<>(comparing(Genre::getId));

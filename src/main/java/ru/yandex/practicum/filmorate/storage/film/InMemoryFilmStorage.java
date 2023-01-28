@@ -54,7 +54,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
 
-
     private boolean isExistByName(Film film) {
         boolean isExist = false;
         for (Film f : films.values()) {

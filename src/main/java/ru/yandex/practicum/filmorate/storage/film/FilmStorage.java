@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
 import java.util.Optional;
+
 @Component
 public interface FilmStorage {
     List<Film> getAllFilms();
@@ -14,5 +15,4 @@ public interface FilmStorage {
     Film createFilm(Film film);
 
     Film updateFilm(Film film);
-
 }
