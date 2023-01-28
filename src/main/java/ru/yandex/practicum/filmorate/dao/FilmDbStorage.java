@@ -38,6 +38,25 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilmById(int id) {
+        checkIdFilm(id);
+        String sql1 = "DELETE FROM FILMS WHERE ID=?";
+        jdbcTemplate.update(sql1, id);
+        String sql2 = "DELETE FROM FILMS_GENRE WHERE film_id=?";
+        jdbcTemplate.update(sql2, id);
+        String sql3 = "DELETE FROM FILMS_DIRECTOR WHERE film_id=?";
+        jdbcTemplate.update(sql3, id);
+        String sql4 = "DELETE FROM FILM_LIKES WHERE film_id=?";
+        jdbcTemplate.update(sql4, id);
+    }
+
+    private void checkIdFilm(int id) {
+        if (getFilmById(id).isEmpty()) {
+            throw new NotFoundException("Фильм с таким id не найден.");
+        }
+    }
+
+    @Override
     public Optional<Film> getFilmById(int id) {
         String sql = "SELECT * " +
                 "FROM films AS f " +
@@ -94,6 +113,7 @@ public class FilmDbStorage implements FilmStorage {
                             preparedStatement.setInt(1, recordId);
                             preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
                         }
+
                         @Override
                         public int getBatchSize() {
                             return film.getGenres().size();
@@ -109,6 +129,7 @@ public class FilmDbStorage implements FilmStorage {
                             preparedStatement.setInt(1, recordId);
                             preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
                         }
+
                         @Override
                         public int getBatchSize() {
                             return film.getDirectors().size();
@@ -145,6 +166,7 @@ public class FilmDbStorage implements FilmStorage {
                                 preparedStatement.setInt(1, film.getId());
                                 preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
                             }
+
                             @Override
                             public int getBatchSize() {
                                 return film.getGenres().size();
@@ -162,6 +184,7 @@ public class FilmDbStorage implements FilmStorage {
                                 preparedStatement.setInt(1, film.getId());
                                 preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
                             }
+
                             @Override
                             public int getBatchSize() {
                                 return film.getDirectors().size();

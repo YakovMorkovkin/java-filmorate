@@ -62,6 +62,19 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUserById(int id) {
+        checkIdUser(id);
+        String sql1 = "DELETE from USERS where ID=?";
+        jdbcTemplate.update(sql1, id);
+        String sql2 = "DELETE from USER_FRIENDS where USER_ID=?";
+        jdbcTemplate.update(sql2, id);
+        String sql3 = "DELETE from USER_EVENTS where USER_ID=?";
+        jdbcTemplate.update(sql3, id);
+        String sql4 = "DELETE from USER_FRIENDS where FRIENDS_WITH=?";
+        jdbcTemplate.update(sql4, id);
+    }
+
+    @Override
     public User updateUser(User user) {
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
         jdbcTemplate.update(sql
@@ -90,5 +103,11 @@ public class UserDbStorage implements UserStorage {
         user.setName(rs.getString("name"));
         user.setBirthday(rs.getDate("birthday").toLocalDate());
         return user;
+    }
+
+    void checkIdUser(int id) {
+        if (getUserById(id).isEmpty()) {
+            throw new NotFoundException("Пользователь с таким id не найден.");
+        }
     }
 }

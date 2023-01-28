@@ -27,10 +27,9 @@ public class UserServiceDb implements UserService {
 
     @Override
     public void addToFriends(Integer userId, Integer friendId) {
+       checkIdUser(userId);
+       checkIdUser(friendId);
 
-        if (userDbStorage.getUserById(userId).isEmpty() || userDbStorage.getUserById(friendId).isEmpty()) {
-            throw new NotFoundException("Пользователя с id: " + userId + " или с id: " + friendId + " не существует");
-        } else {
             String sql = "INSERT INTO user_friends (user_id,friends_with,confirmation) " +
                     "VALUES (?,?, NVL2 " +
                     "((SELECT * FROM user_friends WHERE confirmation = TRUE AND user_id = ? AND friends_with = ?)" +
@@ -43,7 +42,6 @@ public class UserServiceDb implements UserService {
                     , userId
 
             );
-        }
         eventDBStorage.addEventToUserFeed(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
@@ -65,6 +63,7 @@ public class UserServiceDb implements UserService {
 
     @Override
     public Set<User> getFriendsOfUser(Integer userId) {
+        checkIdUser(userId);
         String sql = "SELECT * " +
                 "FROM users " +
                 "WHERE id IN (" +
@@ -93,5 +92,11 @@ public class UserServiceDb implements UserService {
         TreeSet<User> users = new TreeSet<>(Comparator.comparing(User::getId));
         users.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> userDbStorage.makeUser(rs), userId, otherUserId));
         return users;
+    }
+
+    void checkIdUser(int id) {
+        if (userDbStorage.getUserById(id).isEmpty()) {
+            throw new NotFoundException("Пользователь с таким id не найден.");
+        }
     }
 }

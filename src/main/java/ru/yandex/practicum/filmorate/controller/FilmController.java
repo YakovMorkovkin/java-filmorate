@@ -11,10 +11,8 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -74,6 +72,11 @@ public class FilmController {
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film ) {
         return filmStorage.createFilm(film);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable int id) {
+        filmStorage.deleteFilmById(id);
     }
 
     @PutMapping
