@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,6 +46,20 @@ public class InMemoryFilmService implements FilmService {
     }
 
     @Override
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return inMemoryFilmStorage.getAllFilms().stream()
+                .filter(x -> x.getLikes().contains((long) userId))
+                .filter(x -> x.getLikes().contains((long) friendId))
+                .sorted(Comparator.comparing(x -> (-1) * x.getLikes().size()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Film> searchFilms(String query, String by) {
+        return null;
+    }
+
+    @Override
     public Set<Genre> getAllGenres() {
         return null;
     }
@@ -60,6 +77,36 @@ public class InMemoryFilmService implements FilmService {
     @Override
     public Optional<Mpa> getMpaById(int id) {
         return Optional.empty();
+    }
+
+    @Override
+    public Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy) {
+        return null;
+    }
+
+    @Override
+    public Set<Director> getAllDirectors() {
+        return null;
+    }
+
+    @Override
+    public Optional<Director> getDirectorById(int id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Director createDirector(Director director) {
+        return null;
+    }
+
+    @Override
+    public Director updateDirector(Director director) {
+        return null;
+    }
+
+    @Override
+    public void removeDirector(int id) {
+
     }
 
     private int compare(Film f0, Film f1) {

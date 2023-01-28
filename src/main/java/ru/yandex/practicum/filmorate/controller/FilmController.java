@@ -10,8 +10,11 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -39,11 +42,33 @@ public class FilmController {
         return film;
     }
 
+    @GetMapping("/director/{directorId}")
+    public Set<Film> getSortedFilmsByDirectorId(@PathVariable int directorId
+                                        ,@RequestParam(defaultValue = "year", required = false) String sortBy) {
+        Set<Film> filmsOfDirector = filmService.getSortedFilmsByDirectorId(directorId,sortBy);
+        log.info("Фильмы {} режиссера с id: {}", filmsOfDirector, directorId);
+        return filmsOfDirector;
+    }
+
     @GetMapping("/popular")
     public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) int count) {
         Set<Film> bestFilms = filmService.getCountOfTheBestFilms(count);
         log.info("Самые популярные {} фильмов в базе: {}", count, bestFilms);
         return bestFilms;
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        Collection<Film> commonFilms = filmService.getCommonFilms(userId,friendId);
+        log.info("Общие фильмы фильмы пользователей {} и {} в базе: {}", userId, friendId ,commonFilms);
+        return commonFilms;
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
+        Collection<Film> searchResult = filmService.searchFilms(query, by);
+        log.info("Список фильмов по запросу by = {} в базе: {}", query, searchResult);
+        return searchResult;
     }
 
     @PostMapping

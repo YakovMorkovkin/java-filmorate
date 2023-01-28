@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.EventDBStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
@@ -25,6 +27,8 @@ public class UserController {
     private final UserStorage userStorage;
     private final UserService userService;
     private final RecommendationService recommendationService;
+    private final EventDBStorage eventDBStorage;
+
 
     @Autowired
     public UserController(
@@ -85,9 +89,19 @@ public class UserController {
         userService.removeFromFriends(id, friendId);
     }
 
+
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable Long id){
         log.info("GET /{id}/recommendations");
         return recommendationService.getRecommendation(id);
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable int id) {
+        if (eventDBStorage.getFeed(id).isEmpty()) {
+            throw new NotFoundException(" У пользователя не найдена лента событий");
+        }
+        List<Event> events = eventDBStorage.getFeed(id);
+        log.info("Лента событй пользователя с id-{}: {}", id, events);
+        return events;
     }
 }
