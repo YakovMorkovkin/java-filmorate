@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -21,7 +24,16 @@ public class UserController {
 
     private final UserStorage userStorage;
     private final UserService userService;
+    private final RecommendationService recommendationService;
 
+    @Autowired
+    public UserController(
+            UserService userService,
+            RecommendationService recommendationService
+    ) {
+        this.userService = userService;
+        this.recommendationService = recommendationService;
+    }
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -71,5 +83,11 @@ public class UserController {
     public void removeFromFriends(@PathVariable int id, @PathVariable int friendId) {
         log.info("Пользователи с id-{} и id-{} удалены друг у друга из друзей", id, friendId);
         userService.removeFromFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Long id){
+        log.info("GET /{id}/recommendations");
+        return recommendationService.getRecommendation(id);
     }
 }
