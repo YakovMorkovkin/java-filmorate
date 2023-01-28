@@ -27,7 +27,6 @@ public class UserServiceDb implements UserService {
 
     @Override
     public void addToFriends(Integer userId, Integer friendId) {
-
         if (userDbStorage.getUserById(userId).isEmpty() || userDbStorage.getUserById(friendId).isEmpty()) {
             throw new NotFoundException("Пользователя с id: " + userId + " или с id: " + friendId + " не существует");
         } else {
@@ -43,24 +42,27 @@ public class UserServiceDb implements UserService {
                     , userId
 
             );
+            eventDBStorage.addEventToUserFeed(userId, friendId, EventType.FRIEND, Operation.ADD);
         }
-        eventDBStorage.addEventToUserFeed(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     @Override
     public void removeFromFriends(Integer userId, Integer friendId) {
-        String sql = "DELETE FROM user_friends WHERE user_id = ? AND friends_with = ?";
+        if (userDbStorage.getUserById(userId).isPresent() && userDbStorage.getUserById(friendId).isPresent()) {
 
-        jdbcTemplate.update(sql
-                , userId
-                , friendId
-        );
+            String sql = "DELETE FROM user_friends WHERE user_id = ? AND friends_with = ?";
 
-        jdbcTemplate.update(sql
-                , friendId
-                , userId
-        );
-        eventDBStorage.addEventToUserFeed(userId, friendId, EventType.FRIEND, Operation.REMOVE);
+            jdbcTemplate.update(sql
+                    , userId
+                    , friendId
+            );
+
+            jdbcTemplate.update(sql
+                    , friendId
+                    , userId
+            );
+            eventDBStorage.addEventToUserFeed(userId, friendId, EventType.FRIEND, Operation.REMOVE);
+        } else throw new NotFoundException("Пользователя с id: " + userId + " или с id: " + friendId + " не существует");
     }
 
     @Override

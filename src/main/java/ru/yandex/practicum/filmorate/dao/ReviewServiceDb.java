@@ -11,6 +11,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResourceException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.review.ReviewService;
 
@@ -31,6 +33,7 @@ public class ReviewServiceDb implements ReviewService {
     private final JdbcTemplate jdbcTemplate;
     private final UserDbStorage userDbStorage;
     private final FilmDbStorage filmDbStorage;
+    private final EventDBStorage eventDBStorage;
 
     @Override
     public Review create(Review review) {
@@ -53,7 +56,7 @@ public class ReviewServiceDb implements ReviewService {
             return ps;
         }, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
-
+        eventDBStorage.addEventToUserFeed(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.ADD);
         log.info("Отзыв добавлен: {}", review);
         return review;
     }
@@ -73,12 +76,16 @@ public class ReviewServiceDb implements ReviewService {
                 review.getReviewId());
 
         log.info("Отзыв обновлен: {}", review);
+        Review updatedReview = getReviewById(review.getReviewId());
+        eventDBStorage.addEventToUserFeed(updatedReview.getUserId(), updatedReview.getReviewId(), EventType.REVIEW, Operation.UPDATE);
         return getReviewById(review.getReviewId());
     }
 
     @Override
     public void delete(int id) {
         checkReviewId(id);
+        Review review = getReviewById(id);
+        eventDBStorage.addEventToUserFeed(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.REMOVE);
         String sqlL = "delete from REVIEW_LIKES where review_id = ?";
         String sqlR = "delete from REVIEWS where id = ?";
         jdbcTemplate.update(sqlL, id);

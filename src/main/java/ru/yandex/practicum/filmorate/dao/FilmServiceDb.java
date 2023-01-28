@@ -14,11 +14,6 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import static java.util.Comparator.comparing;
 import java.util.*;
 import java.util.stream.Collectors;
 import static java.util.Comparator.comparing;
@@ -39,8 +34,8 @@ public class FilmServiceDb implements FilmService {
         if (userDbStorage.getUserById(userId).isPresent() && filmDbStorage.getFilmById(filmId).isPresent()) {
             String sql = "INSERT INTO film_likes (film_id,liked_by) VALUES (?,?)";
             jdbcTemplate.update(sql, filmId, userId);
+            eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
         } else throw new NotFoundException("Данные ошибочны.");
-        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     @Override
@@ -51,8 +46,9 @@ public class FilmServiceDb implements FilmService {
                     , filmId
                     , userId
             );
+            eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
         } else throw new NotFoundException("Данные ошибочны.");
-        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
+
     }
 
     @Override
