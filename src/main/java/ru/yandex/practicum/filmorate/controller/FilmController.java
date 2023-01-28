@@ -64,6 +64,13 @@ public class FilmController {
         return commonFilms;
     }
 
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
+        Collection<Film> searchResult = filmService.searchFilms(query, by);
+        log.info("Список фильмов по запросу by = {} в базе: {}", query, searchResult);
+        return searchResult;
+    }
+
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film ) {
         return filmStorage.createFilm(film);
