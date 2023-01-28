@@ -2,13 +2,16 @@ package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ResourceException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.review.ReviewService;
@@ -116,12 +119,7 @@ public class ReviewServiceDb implements ReviewService {
         String sql = "select * from reviews " +
                 "where film_id = " + filmId +
                 "order by useful DESC LIMIT " + count;
-        List<Review> reviews = jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs));
-        if (reviews.isEmpty()) {
-            throw new NotFoundException("Список пуст.");
-        } else {
-            return reviews;
-        }
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs));
     }
 
     @Override
@@ -171,6 +169,7 @@ public class ReviewServiceDb implements ReviewService {
             throw new NotFoundException("Отзыв с таким id не найден.");
         }
     }
+
     private void checkUserId(int id) {
         if (userDbStorage.getUserById(id).isEmpty()) {
             throw new NotFoundException("Пользователь с таким id не найден.");
@@ -185,7 +184,7 @@ public class ReviewServiceDb implements ReviewService {
 
     private void checkReview(Review review) {
         if (review.getContent() == null) {
-            throw new ValidationException("Добавьте описание отзыва.");
+            throw new ResourceException(HttpStatus.INTERNAL_SERVER_ERROR, "Отзыв не может быть пустым.");
         }
     }
 }
