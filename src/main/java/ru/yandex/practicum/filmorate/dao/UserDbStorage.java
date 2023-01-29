@@ -63,6 +63,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteUserById(int id) {
+        //check User is present
         getUserById(id);
         String sql1 = "DELETE from USERS where ID=?";
         jdbcTemplate.update(sql1, id);
