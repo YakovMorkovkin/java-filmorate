@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
@@ -13,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component("EventDBStorage")
@@ -27,8 +29,11 @@ public class EventDBStorage implements EventStorage {
         String sql = "SELECT * " +
                 "FROM user_events " +
                 "WHERE user_id = ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), id);
-
+        List<Event> events;
+        if (jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), id).isEmpty()) {
+            events = new ArrayList<>();
+        } else events = jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), id);
+        return events;
     }
 
     private Event makeEvent(ResultSet rs) throws SQLException {
@@ -63,4 +68,5 @@ public class EventDBStorage implements EventStorage {
             return stmt;
         });
     }
+
 }

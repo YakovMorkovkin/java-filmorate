@@ -74,6 +74,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setDuration(rs.getInt("duration"));
         film.setMpa(makeMpa(rs));
         film.setDirectors(getFilmDirectors(rs.getInt("id")));
+
         film.setGenres(getFilmGenres(rs.getInt("id")));
         return film;
     }
@@ -142,6 +143,7 @@ public class FilmDbStorage implements FilmStorage {
             String sql = "UPDATE films " +
                     "SET name = ?, description = ?, release_date = ?, duration = ?, mpa = ? " +
                     "WHERE id = ?";
+
             jdbcTemplate.update(sql
                     , film.getName()
                     , film.getDescription()
@@ -186,6 +188,10 @@ public class FilmDbStorage implements FilmStorage {
                             }
                         });
             }
+
+            String sql3 = "DELETE FROM films_director WHERE film_id = ?";
+            jdbcTemplate.update(sql3, film.getId());
+
         }
         return getFilmById(film.getId()).orElse(null);
     }
@@ -209,7 +215,6 @@ public class FilmDbStorage implements FilmStorage {
         genre.setName(rs.getString("genre_name"));
         return genre;
     }
-
     private Set<Director> getFilmDirectors(Integer filmId) {
         String sql = "SELECT * " +
                 "FROM films_director AS fd " +
@@ -217,7 +222,6 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE fd.film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeDirector(rs), filmId));
     }
-
     private Director makeDirector(ResultSet rs) throws SQLException {
         Director director = new Director();
         director.setId(rs.getInt("director_id"));

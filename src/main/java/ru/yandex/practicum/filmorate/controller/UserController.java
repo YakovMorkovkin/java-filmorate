@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -83,8 +84,8 @@ public class UserController {
 
     @GetMapping("/{id}/feed")
     public List<Event> getFeed(@PathVariable int id) {
-        if (eventDBStorage.getFeed(id).isEmpty()) {
-            throw new NotFoundException(" У пользователя не найдена лента событий");
+        if (userStorage.getUserById(id).isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
         }
         List<Event> events = eventDBStorage.getFeed(id);
         log.info("Лента событй пользователя с id-{}: {}", id, events);

@@ -16,8 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import static java.util.Comparator.comparing;
+
 
 @Service("FilmServiceDb")
 @Slf4j
@@ -34,8 +34,8 @@ public class FilmServiceDb implements FilmService {
         if (userDbStorage.getUserById(userId).isPresent() && filmDbStorage.getFilmById(filmId).isPresent()) {
             String sql = "INSERT INTO film_likes (film_id,liked_by) VALUES (?,?)";
             jdbcTemplate.update(sql, filmId, userId);
+            eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
         } else throw new NotFoundException("Данные ошибочны.");
-        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     @Override
@@ -46,8 +46,9 @@ public class FilmServiceDb implements FilmService {
                     , filmId
                     , userId
             );
+            eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
         } else throw new NotFoundException("Данные ошибочны.");
-        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
+
     }
 
     @Override
@@ -130,7 +131,6 @@ public class FilmServiceDb implements FilmService {
         mpaSet.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> makeMpa(rs)));
         return mpaSet;
     }
-
     Mpa makeMpa(ResultSet rs) throws SQLException {
         Mpa mpa = new Mpa();
         mpa.setId(rs.getInt("id"));
@@ -185,7 +185,7 @@ public class FilmServiceDb implements FilmService {
                 .sorted(Comparator.comparing(x -> (-1) * x.getLikes().size()))
                 .collect(Collectors.toList());
     }
-
+    
     @Override
     public Collection<Film> searchFilms(String query, String by) {
         Set<Film> result = new HashSet<>();
@@ -227,7 +227,6 @@ public class FilmServiceDb implements FilmService {
         }
         return result;
     }
-
 
     @Override
     public Set<Director> getAllDirectors() {
