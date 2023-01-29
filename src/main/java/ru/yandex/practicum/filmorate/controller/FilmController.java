@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +27,7 @@ public class FilmController {
     @GetMapping
     public List<Film> getAllFilms() {
         List<Film> films  = filmStorage.getAllFilms();
+        films.sort(Comparator.comparing(Film::getId));
         log.info("Количество фильмов в базе: {}",films.size());
         return films;
     }
@@ -49,7 +51,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    private Set<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count,
+    public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count,
                                       @RequestParam(required = false) Integer genreId,
                                       @RequestParam(required = false) Integer year) {
         Set<Film> bestFilms;

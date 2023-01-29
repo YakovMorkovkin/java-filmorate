@@ -31,10 +31,16 @@ public class FilmServiceDb implements FilmService {
 
     @Override
     public void addLike(Integer userId, Integer filmId) {
+        boolean checkLike = jdbcTemplate.query("SELECT liked_by " +
+                "FROM film_likes " +
+                "WHERE film_id = ? AND liked_by = ? "
+                , (rs, rowNum) -> rs.getLong("liked_by"), filmId, userId).isEmpty();
         if (userDbStorage.getUserById(userId).isPresent() && filmDbStorage.getFilmById(filmId).isPresent()) {
-            String sql = "INSERT INTO film_likes (film_id,liked_by) VALUES (?,?)";
-            jdbcTemplate.update(sql, filmId, userId);
             eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
+            if(checkLike) {
+                String sql = "INSERT INTO film_likes (film_id,liked_by) VALUES (?,?)";
+                jdbcTemplate.update(sql, filmId, userId);
+            }
         } else throw new NotFoundException("Данные ошибочны.");
     }
 

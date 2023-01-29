@@ -188,10 +188,6 @@ public class FilmDbStorage implements FilmStorage {
                             }
                         });
             }
-
-            String sql3 = "DELETE FROM films_director WHERE film_id = ?";
-            jdbcTemplate.update(sql3, film.getId());
-
         }
         return getFilmById(film.getId()).orElse(null);
     }
