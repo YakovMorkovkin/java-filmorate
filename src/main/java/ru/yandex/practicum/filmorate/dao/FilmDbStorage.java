@@ -172,6 +172,21 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(film.getId()).orElse(null);
     }
 
+    @Override
+    public void deleteFilmById(int id) {
+        //check Film is present
+        getFilmById(id);
+        String sql1 = "DELETE FROM FILMS WHERE ID=?";
+        jdbcTemplate.update(sql1, id);
+        String sql2 = "DELETE FROM FILMS_GENRE WHERE film_id=?";
+        jdbcTemplate.update(sql2, id);
+        String sql3 = "DELETE FROM FILMS_DIRECTOR WHERE film_id=?";
+        jdbcTemplate.update(sql3, id);
+        String sql4 = "DELETE FROM FILM_LIKES WHERE film_id=?";
+        jdbcTemplate.update(sql4, id);
+    }
+
+
     private Set<Long> getFilmLikes(Integer filmId) {
         String sql = "SELECT * FROM film_likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("liked_by"), filmId));
@@ -205,5 +220,24 @@ public class FilmDbStorage implements FilmStorage {
         director.setId(rs.getInt("director_id"));
         director.setName(rs.getString("director_name"));
         return director;
+    }
+
+
+    /**
+     * Метод возвращает отсортированный список фильмов по ID,
+     * то есть в каком порядке были ID, в том же порядке будет и список фильмов
+     */
+    @Override
+    public List<Film> findFilmsByIdsOrdered(List<Long> ids) {
+        StringBuilder valuesSb = new StringBuilder();
+        for (int i = 0; i < ids.size(); i++) {
+            valuesSb.append("(").append(ids.get(i)).append(", ").append(i + 1).append("), ");
+        }
+        String values = valuesSb.substring(0, valuesSb.length() - 2);
+        String sql = String.format("SELECT F.* " +
+                "FROM FILMS F\n" +
+                "JOIN (VALUES %s) AS V (ID, ORDERING) ON F.ID = V.ID\n" +
+                "ORDER BY V.ORDERING;", values);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 }

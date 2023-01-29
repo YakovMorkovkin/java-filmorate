@@ -24,12 +24,24 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilmById(int id) {
+        films.remove(id);
+    }
+
+    @Override
+    public List<Film> findFilmsByIdsOrdered(List<Long> ids) {
+        return null;
+    }
+
+
+    @Override
     public Optional<Film> getFilmById(int id) {
         if(films.get(id) != null) {
             Film film = films.get(id);
             return Optional.of(film);
         } else return Optional.empty();
     }
+
 
     @Override
     public Film createFilm(Film film) {
@@ -52,7 +64,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         } else throw new ValidationException("Фильма с id: " + film.getId() + " не существует");
         return films.get(film.getId());
     }
-
 
 
     private boolean isExistByName(Film film) {

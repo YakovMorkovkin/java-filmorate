@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.relational.core.sql.Like;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Like;
 
+import ru.yandex.practicum.filmorate.storage.like.LikeDbStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +32,7 @@ public class RecommendationService {
     }
 
     public List<Film> getRecommendation(Long id) {
-        List<Like> likes = likeDbStorage.findAll();
+        List<Like> likes = likeDbStorage.getAllFilms();
         if (likes.stream().noneMatch(like -> Objects.equals(like.getUserId(), id))) {
             return Collections.emptyList();
         }
@@ -114,6 +113,4 @@ public class RecommendationService {
                 // и отдаём
                 .collect(Collectors.toList());
     }
-
-
 }

@@ -54,6 +54,11 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(user.getId());
     }
 
+    @Override
+    public void deleteUserById(int id) {
+        users.remove(id);
+    }
+
     private boolean isExistByEmail(User user) {
         var isExist = false;
         for (User u : users.values()) {
