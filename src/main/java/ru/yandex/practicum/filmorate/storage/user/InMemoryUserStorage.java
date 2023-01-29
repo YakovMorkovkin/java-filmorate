@@ -59,6 +59,7 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(user.getId());
     }
 
+
     private boolean isExistByEmail(User user) {
         var isExist = false;
         for (User u : users.values()) {
