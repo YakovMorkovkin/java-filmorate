@@ -68,16 +68,20 @@ public class UserServiceDb implements UserService {
 
     @Override
     public Set<User> getFriendsOfUser(Integer userId) {
-        checkIdUser(userId);
-        String sql = "SELECT * " +
-                "FROM users " +
-                "WHERE id IN (" +
-                "SELECT friends_with " +
-                "FROM user_friends " +
-                "WHERE user_id = ?) " +
-                "ORDER BY id ";
-        TreeSet<User> users = new TreeSet<>(Comparator.comparing(User::getId));
+        TreeSet<User> users;
+        if (userDbStorage.getUserById(userId).isEmpty()) {
+            throw new NotFoundException("Пользователя с id: " + userId + " не существует");
+        } else {
+            String sql = "SELECT * " +
+                    "FROM users " +
+                    "WHERE id IN (" +
+                    "SELECT friends_with " +
+                    "FROM user_friends " +
+                    "WHERE user_id = ?) " +
+                    "ORDER BY id ";
+        users = new TreeSet<>(Comparator.comparing(User::getId));
         users.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> userDbStorage.makeUser(rs), userId));
+    }
         return users;
     }
 
