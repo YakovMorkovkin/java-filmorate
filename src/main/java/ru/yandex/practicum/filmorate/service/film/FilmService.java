@@ -18,6 +18,8 @@ public interface FilmService {
 
     Set<Film> getCountOfTheBestFilms(Integer count);
 
+    Set<Film> getPopularFilmsByGenreOrYear(Integer genreId, Integer year, Integer count);
+
     Set<Genre> getAllGenres();
 
     Optional<Genre> getGenreById(int id);

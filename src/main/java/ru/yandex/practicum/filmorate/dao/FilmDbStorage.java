@@ -38,6 +38,20 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilmById(int id) {
+        //check Film is present
+        getFilmById(id);
+        String sql1 = "DELETE FROM FILMS WHERE ID=?";
+        jdbcTemplate.update(sql1, id);
+        String sql2 = "DELETE FROM FILMS_GENRE WHERE film_id=?";
+        jdbcTemplate.update(sql2, id);
+        String sql3 = "DELETE FROM FILMS_DIRECTOR WHERE film_id=?";
+        jdbcTemplate.update(sql3, id);
+        String sql4 = "DELETE FROM FILM_LIKES WHERE film_id=?";
+        jdbcTemplate.update(sql4, id);
+    }
+
+    @Override
     public Optional<Film> getFilmById(int id) {
         String sql = "SELECT * " +
                 "FROM films AS f " +
@@ -60,6 +74,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setDuration(rs.getInt("duration"));
         film.setMpa(makeMpa(rs));
         film.setDirectors(getFilmDirectors(rs.getInt("id")));
+
         film.setGenres(getFilmGenres(rs.getInt("id")));
         return film;
     }
@@ -94,6 +109,7 @@ public class FilmDbStorage implements FilmStorage {
                             preparedStatement.setInt(1, recordId);
                             preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
                         }
+
                         @Override
                         public int getBatchSize() {
                             return film.getGenres().size();
@@ -109,6 +125,7 @@ public class FilmDbStorage implements FilmStorage {
                             preparedStatement.setInt(1, recordId);
                             preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
                         }
+
                         @Override
                         public int getBatchSize() {
                             return film.getDirectors().size();
@@ -126,6 +143,7 @@ public class FilmDbStorage implements FilmStorage {
             String sql = "UPDATE films " +
                     "SET name = ?, description = ?, release_date = ?, duration = ?, mpa = ? " +
                     "WHERE id = ?";
+
             jdbcTemplate.update(sql
                     , film.getName()
                     , film.getDescription()
@@ -145,6 +163,7 @@ public class FilmDbStorage implements FilmStorage {
                                 preparedStatement.setInt(1, film.getId());
                                 preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
                             }
+
                             @Override
                             public int getBatchSize() {
                                 return film.getGenres().size();
@@ -162,6 +181,7 @@ public class FilmDbStorage implements FilmStorage {
                                 preparedStatement.setInt(1, film.getId());
                                 preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
                             }
+
                             @Override
                             public int getBatchSize() {
                                 return film.getDirectors().size();
@@ -206,7 +226,6 @@ public class FilmDbStorage implements FilmStorage {
         genre.setName(rs.getString("genre_name"));
         return genre;
     }
-
     private Set<Director> getFilmDirectors(Integer filmId) {
         String sql = "SELECT * " +
                 "FROM films_director AS fd " +
@@ -214,14 +233,12 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE fd.film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeDirector(rs), filmId));
     }
-
     private Director makeDirector(ResultSet rs) throws SQLException {
         Director director = new Director();
         director.setId(rs.getInt("director_id"));
         director.setName(rs.getString("director_name"));
         return director;
     }
-
 
     /**
      * Метод возвращает отсортированный список фильмов по ID,
@@ -241,3 +258,4 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
 }
+
