@@ -230,6 +230,7 @@ public class FilmDbStorage implements FilmStorage {
      * Метод возвращает отсортированный список фильмов по ID,
      * то есть в каком порядке были ID, в том же порядке будет и список фильмов
      */
+
     @Override
     public List<Film> findFilmsByIdsOrdered(List<Long> ids) {
         StringBuilder valuesSb = new StringBuilder();
@@ -237,9 +238,10 @@ public class FilmDbStorage implements FilmStorage {
             valuesSb.append("(").append(ids.get(i)).append(", ").append(i + 1).append("), ");
         }
         String values = valuesSb.substring(0, valuesSb.length() - 2);
-        String sql = String.format("SELECT F.* " +
+        String sql = String.format("SELECT * " +
                 "FROM FILMS F\n" +
                 "JOIN (VALUES %s) AS V (ID, ORDERING) ON F.ID = V.ID\n" +
+                "JOIN MPA AS M ON F.MPA = M.ID\n" +
                 "ORDER BY V.ORDERING;", values);
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }

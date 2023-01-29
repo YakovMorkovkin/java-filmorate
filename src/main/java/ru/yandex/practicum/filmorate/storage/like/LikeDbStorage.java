@@ -21,10 +21,10 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public List<Like> getAllFilms() {
-        String sql = "SELECT * FROM LIKES ORDER BY USER_ID";
+        String sql = "SELECT * FROM FILM_LIKES ORDER BY LIKED_BY";
         return jdbcTemplate.query(sql, (rs, rowNum) -> Like.builder()
                 .filmId(rs.getLong("FILM_ID"))
-                .userId(rs.getLong("USER_ID"))
+                .userId(rs.getLong("LIKED_BY"))
                 .build());
     }
 }
