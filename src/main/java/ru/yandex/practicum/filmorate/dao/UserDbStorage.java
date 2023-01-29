@@ -63,7 +63,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteUserById(int id) {
-        checkIdUser(id);
+        getUserById(id);
         String sql1 = "DELETE from USERS where ID=?";
         jdbcTemplate.update(sql1, id);
         String sql2 = "DELETE from USER_FRIENDS where USER_ID=?";
@@ -103,11 +103,5 @@ public class UserDbStorage implements UserStorage {
         user.setName(rs.getString("name"));
         user.setBirthday(rs.getDate("birthday").toLocalDate());
         return user;
-    }
-
-    void checkIdUser(int id) {
-        if (getUserById(id).isEmpty()) {
-            throw new NotFoundException("Пользователь с таким id не найден.");
-        }
     }
 }
