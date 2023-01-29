@@ -10,6 +10,9 @@ public interface UserStorage {
     List<User> getAllUsers();
     Optional<User> getUserById(int id);
     User createUser(User user);
+
+    void deleteUserById(int id);
+
     User updateUser(User user);
 
 }

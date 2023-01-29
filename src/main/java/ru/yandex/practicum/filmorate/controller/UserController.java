@@ -32,6 +32,11 @@ public class UserController {
         return userStorage.getAllUsers();
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable int id) {
+        userStorage.deleteUserById(id);
+    }
+
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
         if (userStorage.getUserById(id).isEmpty()) {

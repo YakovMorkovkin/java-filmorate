@@ -24,6 +24,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilmById(int id) {
+        films.remove(id);
+    }
+
+    @Override
     public Optional<Film> getFilmById(int id) {
         if(films.get(id) != null) {
             Film film = films.get(id);

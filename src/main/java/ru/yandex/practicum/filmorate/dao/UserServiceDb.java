@@ -30,6 +30,7 @@ public class UserServiceDb implements UserService {
         if (userDbStorage.getUserById(userId).isEmpty() || userDbStorage.getUserById(friendId).isEmpty()) {
             throw new NotFoundException("Пользователя с id: " + userId + " или с id: " + friendId + " не существует");
         } else {
+
             String sql = "INSERT INTO user_friends (user_id,friends_with,confirmation) " +
                     "VALUES (?,?, NVL2 " +
                     "((SELECT * FROM user_friends WHERE confirmation = TRUE AND user_id = ? AND friends_with = ?)" +
@@ -67,6 +68,7 @@ public class UserServiceDb implements UserService {
 
     @Override
     public Set<User> getFriendsOfUser(Integer userId) {
+        checkIdUser(userId);
         String sql = "SELECT * " +
                 "FROM users " +
                 "WHERE id IN (" +
@@ -97,3 +99,4 @@ public class UserServiceDb implements UserService {
         return users;
     }
 }
+

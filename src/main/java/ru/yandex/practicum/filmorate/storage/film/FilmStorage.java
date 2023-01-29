@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface FilmStorage {
     List<Film> getAllFilms();
 
+    void deleteFilmById(int id);
+
     Optional<Film> getFilmById(int id);
 
     Film createFilm(Film film);
