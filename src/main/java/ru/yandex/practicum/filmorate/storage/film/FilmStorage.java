@@ -16,6 +16,5 @@ public interface FilmStorage {
 
     Film updateFilm(Film film);
 
-    void deleteFilmById(int id);
     List<Film> findFilmsByIdsOrdered(List<Long> ids);
 }

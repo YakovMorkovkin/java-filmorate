@@ -24,11 +24,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void deleteFilmById(int id) {
-        films.remove(id);
-    }
-
-    @Override
     public List<Film> findFilmsByIdsOrdered(List<Long> ids) {
         return null;
     }

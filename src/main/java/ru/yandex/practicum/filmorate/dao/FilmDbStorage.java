@@ -172,20 +172,6 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(film.getId()).orElse(null);
     }
 
-    @Override
-    public void deleteFilmById(int id) {
-        //check Film is present
-        getFilmById(id);
-        String sql1 = "DELETE FROM FILMS WHERE ID=?";
-        jdbcTemplate.update(sql1, id);
-        String sql2 = "DELETE FROM FILMS_GENRE WHERE film_id=?";
-        jdbcTemplate.update(sql2, id);
-        String sql3 = "DELETE FROM FILMS_DIRECTOR WHERE film_id=?";
-        jdbcTemplate.update(sql3, id);
-        String sql4 = "DELETE FROM FILM_LIKES WHERE film_id=?";
-        jdbcTemplate.update(sql4, id);
-    }
-
 
     private Set<Long> getFilmLikes(Integer filmId) {
         String sql = "SELECT * FROM film_likes WHERE film_id = ?";
