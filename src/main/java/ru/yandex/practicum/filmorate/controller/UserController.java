@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dao.EventDBStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
@@ -94,6 +95,12 @@ public class UserController {
         List<Event> events = eventDBStorage.getFeed(id);
         log.info("Лента событй пользователя с id-{}: {}", id, events);
         return events;
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Long id){
+        log.info("GET /{id}/recommendations");
+        return recommendationService.getRecommendation(id);
     }
 }
 
