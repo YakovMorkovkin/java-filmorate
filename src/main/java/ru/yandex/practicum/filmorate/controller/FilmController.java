@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -26,8 +25,9 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public List<Film>  getAllFilms() {
+    public List<Film> getAllFilms() {
         List<Film> films  = filmStorage.getAllFilms();
+        films.sort(Comparator.comparing(Film::getId));
         log.info("Количество фильмов в базе: {}",films.size());
         return films;
     }
@@ -51,9 +51,17 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) int count) {
-        Set<Film> bestFilms = filmService.getCountOfTheBestFilms(count);
-        log.info("Самые популярные {} фильмов в базе: {}", count, bestFilms);
+    public Set<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) Integer year) {
+        Set<Film> bestFilms;
+        if (genreId == null && year == null) {
+            bestFilms = filmService.getCountOfTheBestFilms(count);
+            log.info("Самые популярные {} фильмов в базе: {}", count, bestFilms);
+            return bestFilms;
+        }
+        bestFilms = filmService.getPopularFilmsByGenreOrYear(genreId, year, count);
+        log.info("Самые популярные {} фильмов в жанре id = {} за год {}: {}", count, genreId, year, bestFilms);
         return bestFilms;
     }
 
@@ -74,6 +82,11 @@ public class FilmController {
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film ) {
         return filmStorage.createFilm(film);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable int id) {
+        filmStorage.deleteFilmById(id);
     }
 
     @PutMapping

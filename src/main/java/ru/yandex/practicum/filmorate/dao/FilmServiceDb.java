@@ -16,8 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import static java.util.Comparator.comparing;
+
 
 @Service("FilmServiceDb")
 @Slf4j
@@ -31,11 +31,17 @@ public class FilmServiceDb implements FilmService {
 
     @Override
     public void addLike(Integer userId, Integer filmId) {
+        boolean checkLike = jdbcTemplate.query("SELECT liked_by " +
+                "FROM film_likes " +
+                "WHERE film_id = ? AND liked_by = ? "
+                , (rs, rowNum) -> rs.getLong("liked_by"), filmId, userId).isEmpty();
         if (userDbStorage.getUserById(userId).isPresent() && filmDbStorage.getFilmById(filmId).isPresent()) {
-            String sql = "INSERT INTO film_likes (film_id,liked_by) VALUES (?,?)";
-            jdbcTemplate.update(sql, filmId, userId);
+            eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
+            if(checkLike) {
+                String sql = "INSERT INTO film_likes (film_id,liked_by) VALUES (?,?)";
+                jdbcTemplate.update(sql, filmId, userId);
+            }
         } else throw new NotFoundException("Данные ошибочны.");
-        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     @Override
@@ -46,8 +52,9 @@ public class FilmServiceDb implements FilmService {
                     , filmId
                     , userId
             );
+            eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
         } else throw new NotFoundException("Данные ошибочны.");
-        eventDBStorage.addEventToUserFeed(userId, filmId, EventType.LIKE, Operation.REMOVE);
+
     }
 
     @Override
@@ -75,7 +82,29 @@ public class FilmServiceDb implements FilmService {
         return result;
     }
 
-    public Set<Genre> getAllGenres() {
+    public Set<Film> getPopularFilmsByGenreOrYear(Integer genreId, Integer year, Integer count) {
+        String sql = "SELECT f.id AS id, f.name, f.description, f.release_date, f.duration, f.mpa, m.id, m.mpa_name " +
+                "FROM films f " +
+                "LEFT JOIN film_likes fl on f.id = fl.film_id " +
+                "INNER JOIN mpa m on f.mpa = m.id " +
+                "INNER JOIN films_genre fg ON f.id = fg.film_id " +
+                "WHERE fg.genre_id = ? OR EXTRACT(YEAR FROM CAST(f.release_date AS date)) = ? " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(fl.liked_by) " +
+                "LIMIT ?";
+
+        List<Film> popularFilms = jdbcTemplate.query(sql, (rs, rowNum) -> filmDbStorage.makeFilm(rs), genreId, year, count);
+
+        if (genreId != null && year != null) {
+            return popularFilms.stream()
+                    .filter(f -> !f.getGenres().isEmpty() && f.getReleaseDate().getYear() == year)
+                    .collect(Collectors.toSet());
+        }
+
+        return new HashSet<>(popularFilms);
+    }
+
+    public Set<Genre> getAllGenres(){
         String sql = "SELECT * " +
                 "FROM genre ";
         TreeSet<Genre> genreSet = new TreeSet<>(comparing(Genre::getId));
@@ -108,7 +137,6 @@ public class FilmServiceDb implements FilmService {
         mpaSet.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> makeMpa(rs)));
         return mpaSet;
     }
-
     Mpa makeMpa(ResultSet rs) throws SQLException {
         Mpa mpa = new Mpa();
         mpa.setId(rs.getInt("id"));
@@ -163,7 +191,7 @@ public class FilmServiceDb implements FilmService {
                 .sorted(Comparator.comparing(x -> (-1) * x.getLikes().size()))
                 .collect(Collectors.toList());
     }
-
+    
     @Override
     public Collection<Film> searchFilms(String query, String by) {
         Set<Film> result = new HashSet<>();
@@ -205,7 +233,6 @@ public class FilmServiceDb implements FilmService {
         }
         return result;
     }
-
 
     @Override
     public Set<Director> getAllDirectors() {

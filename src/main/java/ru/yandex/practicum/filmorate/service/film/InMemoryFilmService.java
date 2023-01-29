@@ -46,6 +46,11 @@ public class InMemoryFilmService implements FilmService {
     }
 
     @Override
+    public Set<Film> getPopularFilmsByGenreOrYear(Integer genreId, Integer year, Integer count) {
+        return null;
+    }
+
+    @Override
     public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
         return inMemoryFilmStorage.getAllFilms().stream()
                 .filter(x -> x.getLikes().contains((long) userId))
