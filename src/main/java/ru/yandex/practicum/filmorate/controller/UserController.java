@@ -90,7 +90,7 @@ public class UserController {
     @GetMapping("/{id}/feed")
     public List<Event> getFeed(@PathVariable int id) {
         if (userStorage.getUserById(id).isEmpty()) {
-            throw new NotFoundException("Пользователь не найден");
+            throw new NotFoundException("Лента событй пользователя с id - " +id+ " не найдена");
         }
         List<Event> events = eventDBStorage.getFeed(id);
         log.info("Лента событй пользователя с id-{}: {}", id, events);

@@ -7,5 +7,5 @@ import ru.yandex.practicum.filmorate.model.Like;
 import java.util.List;
 
 public interface LikeStorage {
-    List<Like> getAllFilms();
+    List<Like> getAllLikes();
 }

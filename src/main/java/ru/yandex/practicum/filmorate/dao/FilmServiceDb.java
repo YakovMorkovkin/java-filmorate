@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -83,6 +84,7 @@ public class FilmServiceDb implements FilmService {
     }
 
     public Set<Film> getPopularFilmsByGenreOrYear(Integer genreId, Integer year, Integer count) {
+        log.info("PF-5 Получение списка фильмов количеством {}, отсортированнного по параметрам жанр,год ",count);
         String sql = "SELECT f.id AS id, f.name, f.description, f.release_date, f.duration, f.mpa, m.id, m.mpa_name " +
                 "FROM films f " +
                 "LEFT JOIN film_likes fl on f.id = fl.film_id " +
@@ -123,11 +125,14 @@ public class FilmServiceDb implements FilmService {
         String sql = "SELECT * " +
                 "FROM genre " +
                 "WHERE id = ?";
-        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs), id).isEmpty()) {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeGenre(rs), id));
-        } else {
+        Optional<Genre> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeGenre(rs), id));
+        } catch (EmptyResultDataAccessException exp) {
             throw new NotFoundException("Жанра с id -" + id + " нет в базе.");
         }
+        return result;
+
     }
 
     public Set<Mpa> getAllMpa() {
@@ -137,7 +142,7 @@ public class FilmServiceDb implements FilmService {
         mpaSet.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> makeMpa(rs)));
         return mpaSet;
     }
-    Mpa makeMpa(ResultSet rs) throws SQLException {
+    private Mpa makeMpa(ResultSet rs) throws SQLException {
         Mpa mpa = new Mpa();
         mpa.setId(rs.getInt("id"));
         mpa.setName(rs.getString("mpa_name"));
@@ -148,15 +153,19 @@ public class FilmServiceDb implements FilmService {
         String sql = "SELECT * " +
                 "FROM mpa " +
                 "WHERE id = ?";
-        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeMpa(rs), id).isEmpty()) {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeMpa(rs), id));
-        } else {
+        Optional<Mpa> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeMpa(rs), id));
+        } catch (EmptyResultDataAccessException exp) {
             throw new NotFoundException("Рейтинга с id -" + id + " нет в базе.");
         }
+        return result;
     }
 
     @Override
+
     public Set<Film> getSortedFilmsByDirectorId(int directorId, String sortBy) {
+        log.info("PF-1 Получение списка фильмов режиссера с id-{} отсортированнного по {} ", directorId, sortBy);
         Set<Film> result = new HashSet<>();
         String sortByYear = "ORDER BY (EXTRACT(YEAR FROM CAST(f.release_date AS date)))";
         String sortByLikes = "ORDER BY COUNT(fl.liked_by) DESC";
@@ -185,6 +194,7 @@ public class FilmServiceDb implements FilmService {
     }
 
     public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        log.info("PF-7 Получение списка общих фильмов пользователей с id-{} и id-{}", userId, friendId);
         return filmDbStorage.getAllFilms().stream()
                 .filter(x -> x.getLikes().contains((long) userId))
                 .filter(x -> x.getLikes().contains((long) friendId))
@@ -194,6 +204,7 @@ public class FilmServiceDb implements FilmService {
     
     @Override
     public Collection<Film> searchFilms(String query, String by) {
+        log.info("PF-6 Поиск фильмов по режиссеру и названию фильма {} по подстроке {} ", by, query);
         Set<Film> result = new HashSet<>();
         final String sql = "SELECT f.id " +
                 "           ,f.name " +
@@ -236,6 +247,7 @@ public class FilmServiceDb implements FilmService {
 
     @Override
     public Set<Director> getAllDirectors() {
+        log.info("PF-1 Получение списка всех режиссеров");
         String sql = "SELECT * " +
                 "FROM directors ";
         TreeSet<Director> directorSet = new TreeSet<>(comparing(Director::getId));
@@ -252,18 +264,22 @@ public class FilmServiceDb implements FilmService {
 
     @Override
     public Optional<Director> getDirectorById(int id) {
+        log.info("PF-1 Получение режиссера с id-{}", id);
         String sql = "SELECT * " +
                 "FROM directors " +
                 "WHERE id = ?";
-        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeDirector(rs), id).isEmpty()) {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeDirector(rs), id));
-        } else {
+        Optional<Director> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeDirector(rs), id));
+        } catch (EmptyResultDataAccessException exp) {
             throw new NotFoundException("Режиссера с id -" + id + " нет в базе.");
         }
+        return result;
     }
 
     @Override
     public Director createDirector(Director director) {
+        log.info("PF-1 Добавление режиссера с id-{}", director.getId());
         String sql = "INSERT INTO directors (director_name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -277,6 +293,7 @@ public class FilmServiceDb implements FilmService {
 
     @Override
     public Director updateDirector(Director director) {
+        log.info("PF-1 Обновление режиссера с id-{}", director.getId());
         if (getDirectorById(director.getId()).orElse(null) == null) {
             throw new NotFoundException("Режиссера с id - " + director.getId() + "нет в базе данных.");
         } else {
@@ -293,6 +310,7 @@ public class FilmServiceDb implements FilmService {
 
     @Override
     public void removeDirector(int id) {
+        log.info("PF-1 Удаление режиссера с id-{}", id);
         String sql = "DELETE FROM directors WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }

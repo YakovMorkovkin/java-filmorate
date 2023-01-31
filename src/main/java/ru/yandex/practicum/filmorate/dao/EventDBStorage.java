@@ -2,9 +2,9 @@ package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
@@ -26,13 +26,16 @@ public class EventDBStorage implements EventStorage {
 
     @Override
     public List<Event> getFeed(int id) {
+        log.info("PF-2 Получение ленты событий пользователя с id-{} ", id);
         String sql = "SELECT * " +
                 "FROM user_events " +
                 "WHERE user_id = ?";
         List<Event> events;
-        if (jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), id).isEmpty()) {
+        try {
+            events = jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), id);
+        } catch (EmptyResultDataAccessException exp) {
             events = new ArrayList<>();
-        } else events = jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), id);
+        }
         return events;
     }
 
@@ -49,6 +52,7 @@ public class EventDBStorage implements EventStorage {
 
     @Override
     public void addEventToUserFeed(int userId, int entityId, EventType eventType, Operation operation) {
+        log.info("PF-2 Добавление события в ленту пользоватея с с id-{} ", userId);
         String sql = "INSERT INTO user_events (" +
                 "time_of_event" +
                 ", user_id" +

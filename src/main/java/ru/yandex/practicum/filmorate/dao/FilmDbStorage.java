@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -39,16 +40,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteFilmById(int id) {
+        log.info(" PF-4 Удаление фильма с id {}", id);
         //check Film is present
         getFilmById(id);
         String sql1 = "DELETE FROM FILMS WHERE ID=?";
         jdbcTemplate.update(sql1, id);
-        String sql2 = "DELETE FROM FILMS_GENRE WHERE film_id=?";
-        jdbcTemplate.update(sql2, id);
-        String sql3 = "DELETE FROM FILMS_DIRECTOR WHERE film_id=?";
-        jdbcTemplate.update(sql3, id);
-        String sql4 = "DELETE FROM FILM_LIKES WHERE film_id=?";
-        jdbcTemplate.update(sql4, id);
     }
 
     @Override
@@ -57,11 +53,13 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films AS f " +
                 "INNER JOIN mpa ON f.mpa = mpa.id " +
                 "WHERE f.id = ?";
-        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), id).isEmpty()) {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeFilm(rs), id));
-        } else {
-            throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
+        Optional<Film> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeFilm(rs), id));
+        } catch (EmptyResultDataAccessException exp) {
+            throw new NotFoundException("Фильм с id - " + id + " не найден.");
         }
+        return result;
     }
 
     protected Film makeFilm(ResultSet rs) throws SQLException {
@@ -79,7 +77,7 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    Mpa makeMpa(ResultSet rs) throws SQLException {
+    private Mpa makeMpa(ResultSet rs) throws SQLException {
         Mpa mpa = new Mpa();
         mpa.setId(rs.getInt("mpa"));
         mpa.setName(rs.getString("mpa_name"));
@@ -192,7 +190,6 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmById(film.getId()).orElse(null);
     }
 
-
     private Set<Long> getFilmLikes(Integer filmId) {
         String sql = "SELECT * FROM film_likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("liked_by"), filmId));
@@ -213,12 +210,14 @@ public class FilmDbStorage implements FilmStorage {
         return genre;
     }
     private Set<Director> getFilmDirectors(Integer filmId) {
+        log.info("PF-1 Получение списка режиссеров фильма с id-{} ", filmId);
         String sql = "SELECT * " +
                 "FROM films_director AS fd " +
                 "INNER JOIN directors AS d ON fd.director_id = d.id " +
                 "WHERE fd.film_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeDirector(rs), filmId));
     }
+
     private Director makeDirector(ResultSet rs) throws SQLException {
         Director director = new Director();
         director.setId(rs.getInt("director_id"));
@@ -233,6 +232,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findFilmsByIdsOrdered(List<Long> ids) {
+        log.info("PF-8 Получение списка фильмов упорядоченных по id-{} ", ids);
         StringBuilder valuesSb = new StringBuilder();
         for (int i = 0; i < ids.size(); i++) {
             valuesSb.append("(").append(ids.get(i)).append(", ").append(i + 1).append("), ");

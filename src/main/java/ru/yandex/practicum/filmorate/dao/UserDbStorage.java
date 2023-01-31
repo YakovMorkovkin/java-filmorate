@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -34,11 +35,13 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUserById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
-        if (!jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs), id).isEmpty()) {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeUser(rs), id));
-        } else {
-            throw new NotFoundException("Пользователь с идентификатором " + id + " не найден.");
+        Optional<User> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeUser(rs), id));
+        } catch (EmptyResultDataAccessException exp) {
+            throw new NotFoundException("Пользователь с id - " + id + " не найден.");
         }
+        return result;
     }
 
     @Override
@@ -63,16 +66,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteUserById(int id) {
+        log.info(" PF-4 Удаление пользователя с id {}", id);
         //check User is present
         getUserById(id);
         String sql1 = "DELETE from USERS where ID=?";
         jdbcTemplate.update(sql1, id);
-        String sql2 = "DELETE from USER_FRIENDS where USER_ID=?";
-        jdbcTemplate.update(sql2, id);
-        String sql3 = "DELETE from USER_EVENTS where USER_ID=?";
-        jdbcTemplate.update(sql3, id);
-        String sql4 = "DELETE from USER_FRIENDS where FRIENDS_WITH=?";
-        jdbcTemplate.update(sql4, id);
     }
 
     @Override

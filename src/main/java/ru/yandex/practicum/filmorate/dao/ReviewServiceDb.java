@@ -35,6 +35,8 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public Review create(Review review) {
+        log.info("PF-3 Создание нового отзыва на фильм с id-{} от пользователя с id-{} ",
+                review.getFilmId(), review.getUserId());
         checkUserId(review.getUserId());
         checkFilmId(review.getFilmId());
         review.setUseful(0);
@@ -60,6 +62,8 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public Review update(Review review) {
+        log.info("PF-3 Обновление отзыва на фильм с id-{} от пользователя с id-{} ",
+                review.getFilmId(), review.getUserId());
         checkUserId(review.getUserId());
         checkFilmId(review.getFilmId());
         checkReviewId(review.getReviewId());
@@ -80,6 +84,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public void delete(int id) {
+        log.info("PF-3 Удаление отзыва  с id-{}", id);
         checkReviewId(id);
         Review review = getReviewById(id);
         eventDBStorage.addEventToUserFeed(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.REMOVE);
@@ -92,7 +97,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public Review getReviewById(int id) {
-        log.info("Получение отзыва с id {}", id);
+        log.info("PF-3 Получение отзыва с id {}", id);
         String sql = "select * from reviews " +
                 "where id = ?";
         try {
@@ -104,7 +109,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public List<Review> getAll(int count) {
-        log.info("Получение списка отзывов в количестве {}", count);
+        log.info("PF-3 Получение списка отзывов в количестве {}", count);
         String sql = "select * from reviews " +
                 "order by useful DESC LIMIT " + count;
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs));
@@ -112,7 +117,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public List<Review> getAllReviewByFilm(int filmId, int count) {
-        log.info("Получение списка отзывов в количестве {}", count);
+        log.info("PF-3 Получение всех отзывов на фильм с id - {}", filmId);
         String sql = "select * from reviews " +
                 "where film_id = " + filmId +
                 "order by useful DESC LIMIT " + count;
@@ -121,6 +126,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public void addLike(int id, int userId) {
+        log.info("PF-3 Добавление Like отзыву с id - {} от пользователя с id - {}", id, userId);
         checkReviewId(id);
         String sql = "INSERT INTO REVIEW_LIKES (review_id, user_id, islike) " +
                 "VALUES (?, ?, ?)";
@@ -130,6 +136,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public void addDislike(int id, int userId) {
+        log.info("PF-3 Добавление Dislike отзыву с id - {} от пользователя с id - {}", id, userId);
         checkReviewId(id);
         String sql = "INSERT INTO REVIEW_LIKES (review_id, user_id, islike) " +
                 "VALUES (?, ?, ?)";
@@ -139,6 +146,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public void deleteDislike(int id, int userId) {
+        log.info("PF-3 Удаление Dislike отзыву с id - {} от пользователя с id - {}", id, userId);
         checkReviewId(id);
         String sql = "delete from REVIEW_LIKES where review_id = ? and user_id = ? and islike = ?";
         jdbcTemplate.update(sql, id, userId, false);
@@ -147,6 +155,7 @@ public class ReviewServiceDb implements ReviewService {
 
     @Override
     public void deleteLike(int id, int userId) {
+        log.info("PF-3 Удаление Like отзыву с id - {} от пользователя с id - {}", id, userId);
         checkReviewId(id);
         String sql = "delete from REVIEW_LIKES where review_id = ? and user_id = ? and islike = ?";
         jdbcTemplate.update(sql, id, userId, true);
@@ -166,6 +175,7 @@ public class ReviewServiceDb implements ReviewService {
     }
 
     private void calcUseful (boolean isLike, int reviewId) {
+        log.info("PF-3 Расчет рейтинга полезности отзыва с id - {}", reviewId);
         String sql = "UPDATE REVIEWS SET useful = ? " +
                 "WHERE id = ?";
         int newUseful;
@@ -182,19 +192,19 @@ public class ReviewServiceDb implements ReviewService {
 
     private void checkReviewId(int id) {
         if (getReviewById(id) == null) {
-            throw new NotFoundException("Отзыв с таким id не найден.");
+            throw new NotFoundException("Отзыв с id - " + id + " не найден.");
         }
     }
 
     private void checkUserId(int id) {
         if (userDbStorage.getUserById(id).isEmpty()) {
-            throw new NotFoundException("Пользователь с таким id не найден.");
+            throw new NotFoundException("Пользователь с id - " + id + " не найден.");
         }
     }
 
     private void checkFilmId(int id) {
         if (filmDbStorage.getFilmById(id).isEmpty()) {
-            throw new NotFoundException("Фильм с таким id не найден.");
+            throw new NotFoundException("Фильм с id - " + id + " не найден.");
         }
     }
 }

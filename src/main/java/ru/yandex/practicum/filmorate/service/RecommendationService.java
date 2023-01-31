@@ -1,18 +1,20 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 
-import ru.yandex.practicum.filmorate.storage.like.LikeDbStorage;
+import ru.yandex.practicum.filmorate.dao.LikeDbStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class RecommendationService {
     private final LikeDbStorage likeDbStorage;
     private final FilmDbStorage filmDbStorage;
@@ -23,16 +25,9 @@ public class RecommendationService {
      */
     private final Map<Long, Map<Long, Integer>> likeMatrix = new HashMap<>();
 
-    public RecommendationService(
-            LikeDbStorage likeDbStorage,
-            FilmDbStorage filmDbStorage
-    ) {
-        this.likeDbStorage = likeDbStorage;
-        this.filmDbStorage = filmDbStorage;
-    }
-
     public List<Film> getRecommendation(Long id) {
-        List<Like> likes = likeDbStorage.getAllFilms();
+        log.info("PF-8 Получение рекоммендаций для пользователя с id -{}", id);
+        List<Like> likes = likeDbStorage.getAllLikes();
         if (likes.stream().noneMatch(like -> Objects.equals(like.getUserId(), id))) {
             return Collections.emptyList();
         }
@@ -53,6 +48,7 @@ public class RecommendationService {
      * что бы он самостоятельно обновлялся раз в минуту например
      */
     private void buildLikeMatrix(List<Like> likes) {
+        log.info("PF-8 Построение матрицы Like");
         // вначале очищаем старую матрицу
         likeMatrix.clear();
         HashMap<Long, List<Long>> likeMap = new HashMap<>();
@@ -86,6 +82,7 @@ public class RecommendationService {
      * Метод возвращает список ID фильмов в порядке убывания по релевантности
      */
     private List<Long> recommend(List<Long> userLikes) {
+        log.info("PF-8 Получение списка id фильмов");
         // создаём мапу фильм->очки релевантности,
         // очками релевантности тут является сумма лайков из матрицы лайков
         // только по тем фильмам, которые лайкнул юзер
