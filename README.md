@@ -3,7 +3,7 @@ Template repository for Filmorate project.
 
 # ER-review
 
-![This is an image](https://github.com/YakovMorkovkin/java-filmorate/blob/main/Filmorate.png)
+![This is an image](https://github.com/YakovMorkovkin/java-filmorate/blob/develop/Filmorate%20.png)
 
 # Примеры SQL - запросов
 
