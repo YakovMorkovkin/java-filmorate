@@ -2,14 +2,20 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dao.EventDBStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,11 +27,19 @@ public class UserController {
 
     private final UserStorage userStorage;
     private final UserService userService;
+    private final EventDBStorage eventDBStorage;
+    private final RecommendationService recommendationService;
+
 
 
     @GetMapping
     public List<User> getAllUsers() {
         return userStorage.getAllUsers();
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable int id) {
+        userStorage.deleteUserById(id);
     }
 
     @GetMapping("/{id}")
@@ -72,4 +86,22 @@ public class UserController {
         log.info("Пользователи с id-{} и id-{} удалены друг у друга из друзей", id, friendId);
         userService.removeFromFriends(id, friendId);
     }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable int id) {
+        if (userStorage.getUserById(id).isEmpty()) {
+            throw new NotFoundException("Лента событй пользователя с id - " +id+ " не найдена");
+        }
+        List<Event> events = eventDBStorage.getFeed(id);
+        log.info("Лента событй пользователя с id-{}: {}", id, events);
+        return events;
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Long id){
+        log.info("GET /{id}/recommendations");
+        return recommendationService.getRecommendation(id);
+    }
 }
+
+

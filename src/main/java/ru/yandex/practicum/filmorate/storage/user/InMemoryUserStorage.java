@@ -45,6 +45,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUserById(int id) {
+        users.remove(id);
+    }
+
+    @Override
     public User updateUser(User user) {
         if (isExistById(user)) {
             users.remove(user.getId());
@@ -53,6 +58,7 @@ public class InMemoryUserStorage implements UserStorage {
         log.info("Обновлены данные пользователя: {}", user);
         return users.get(user.getId());
     }
+
 
     private boolean isExistByEmail(User user) {
         var isExist = false;
